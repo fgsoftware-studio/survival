@@ -1,45 +1,26 @@
+using System;
 using System.Collections;
 using UnityEngine;
 
 public class BarrelSpawner : MonoBehaviour
 {
-    [SerializeField] private GameObject barrel;
-    private Vector3 position;
-    private Quaternion rotation;
-    public int lifetime;
+    private GameObject[] barrels;
+    private Array[] location;
 
     private void Start()
     {
-        var obj = GameObject.Find("barrel");
-
-        position = obj.transform.position;
-        rotation = obj.transform.rotation;
-
-        InvokeRepeating("Spawn", 0, 7);
+        RespawnBarrels();
     }
 
-    private void Update()
+    private void RespawnBarrels()
     {
-        //StartCoroutine(Spawn(lifetime));
-    }
-
-    private void Spawn()
-    {
-        var bar = Instantiate(barrel, position, rotation);
-        Destroy(bar, 5);
-    }
-
-    private IEnumerator Spawn(int secs)
-    {
-        yield return new WaitForSeconds(secs);
-
-        foreach (var b in GameObject.FindGameObjectsWithTag("barrel"))
+        barrels = GameObject.FindGameObjectsWithTag("barrel");
+        var barrelsNum = barrels.Length;
+        
+        for(var i = 0 ; i < barrels.Length ; i ++)
         {
-            Destroy(b);
-            Debug.Log("barrel destroyed");
+            Destroy(barrels[i], 5.0f);
+            Debug.Log(i);
         }
-
-        Instantiate(barrel, position, rotation);
-        Debug.Log("barrel spawned");
     }
 }
