@@ -1,4 +1,5 @@
 fileFormatVersion: 2
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream:Assets/New Terrain.asset.meta
 guid: 3549f631edad131449d899313f40e8c9
 =======
@@ -7,6 +8,19 @@ guid: 593997c4a0f88ad47851f81d5b3fce24
 NativeFormatImporter:
   externalObjects: {}
   mainObjectFileID: 11400000
+=======
+<<<<<<< Updated upstream:Assets/Material/mLeaf.mat.meta
+guid: 2cf74053d7e92d645a2cb84e43d0940c
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 2100000
+=======
+guid: 593997c4a0f88ad47851f81d5b3fce24
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 11400000
+>>>>>>> Stashed changes:Assets/HDRPDefaultResources/HDRenderPipelineGlobalSettings.asset.meta
+>>>>>>> Stashed changes
   userData: 
   assetBundleName: 
   assetBundleVariant: 

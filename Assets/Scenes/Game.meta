@@ -1,5 +1,6 @@
 fileFormatVersion: 2
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 guid: 46d0a4b1d2f26a8499ff277aba94bc7e
 =======
 <<<<<<< Updated upstream:Assets/Textures.meta
@@ -11,6 +12,18 @@ guid: 46d0a4b1d2f26a8499ff277aba94bc7e
 folderAsset: yes
 DefaultImporter:
   externalObjects: {}
+=======
+<<<<<<< Updated upstream:Assets/Material/mTrunk.mat.meta
+guid: b4d232d0ec397ef4b8d231117c0be2d2
+NativeFormatImporter:
+=======
+guid: 46d0a4b1d2f26a8499ff277aba94bc7e
+folderAsset: yes
+DefaultImporter:
+>>>>>>> Stashed changes:Assets/Scenes/Game.meta
+  externalObjects: {}
+  mainObjectFileID: 2100000
+>>>>>>> Stashed changes
   userData: 
   assetBundleName: 
   assetBundleVariant: 

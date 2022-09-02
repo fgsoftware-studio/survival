@@ -445,7 +445,10 @@ PrefabInstance:
   m_SourcePrefab: {fileID: 100100000, guid: 2c82776da337e974697f0a56c5518513, type: 3}
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 --- !u!1 &806482856
@@ -863,6 +866,9 @@ PrefabInstance:
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 1e632375856ed9e4fb0a5f951061382c, type: 3}
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -1057,8 +1063,11 @@ Transform:
   m_LocalEulerAnglesHint: {x: 50, y: -30, z: 0}
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 --- !u!1 &1764048038
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 --- !u!114 &1334225402
