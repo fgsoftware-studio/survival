@@ -1,12 +1,8 @@
 fileFormatVersion: 2
-<<<<<<< Updated upstream:Assets/New Terrain.asset.meta
 guid: 373aa77e60886fe4e9f556b35b72c545
-=======
-guid: 593997c4a0f88ad47851f81d5b3fce24
->>>>>>> Stashed changes:Assets/HDRPDefaultResources/HDRenderPipelineGlobalSettings.asset.meta
 NativeFormatImporter:
   externalObjects: {}
-  mainObjectFileID: 11400000
+  mainObjectFileID: 15600000
   userData: 
   assetBundleName: 
   assetBundleVariant: 
