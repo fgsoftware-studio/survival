@@ -1,21 +1,8 @@
 fileFormatVersion: 2
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream:Assets/Material/mLeaf.mat.meta
-=======
->>>>>>> Stashed changes
 guid: 2cf74053d7e92d645a2cb84e43d0940c
 NativeFormatImporter:
   externalObjects: {}
   mainObjectFileID: 2100000
-<<<<<<< Updated upstream
-=======
-guid: 593997c4a0f88ad47851f81d5b3fce24
-NativeFormatImporter:
-  externalObjects: {}
-  mainObjectFileID: 11400000
->>>>>>> Stashed changes:Assets/HDRPDefaultResources/HDRenderPipelineGlobalSettings.asset.meta
-=======
->>>>>>> Stashed changes
   userData: 
   assetBundleName: 
   assetBundleVariant: 
