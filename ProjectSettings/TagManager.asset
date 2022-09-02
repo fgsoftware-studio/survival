@@ -5,11 +5,12 @@ TagManager:
   serializedVersion: 2
   tags:
   - barrel
+  - CinemachineTarget
   layers:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - 
+  - ground
   - Water
   - UI
   - 

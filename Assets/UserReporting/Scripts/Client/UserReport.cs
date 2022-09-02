@@ -10,6 +10,25 @@ namespace Unity.Cloud.UserReporting
     /// </summary>
     public class UserReport : UserReportPreview
     {
+        #region Constructors
+
+        /// <summary>
+        ///     Creates a new instance of the <see cref="UserReport" /> class.
+        /// </summary>
+        public UserReport()
+        {
+            AggregateMetrics = new List<UserReportMetric>();
+            Attachments = new List<UserReportAttachment>();
+            ClientMetrics = new List<UserReportMetric>();
+            DeviceMetadata = new List<UserReportNamedValue>();
+            Events = new List<UserReportEvent>();
+            Fields = new List<UserReportNamedValue>();
+            Measures = new List<UserReportMeasure>();
+            Screenshots = new List<UserReportScreenshot>();
+        }
+
+        #endregion
+
         #region Nested Types
 
         /// <summary>
@@ -26,25 +45,6 @@ namespace Unity.Cloud.UserReporting
             }
 
             #endregion
-        }
-
-        #endregion
-
-        #region Constructors
-
-        /// <summary>
-        ///     Creates a new instance of the <see cref="UserReport" /> class.
-        /// </summary>
-        public UserReport()
-        {
-            AggregateMetrics = new List<UserReportMetric>();
-            Attachments = new List<UserReportAttachment>();
-            ClientMetrics = new List<UserReportMetric>();
-            DeviceMetadata = new List<UserReportNamedValue>();
-            Events = new List<UserReportEvent>();
-            Fields = new List<UserReportNamedValue>();
-            Measures = new List<UserReportMeasure>();
-            Screenshots = new List<UserReportScreenshot>();
         }
 
         #endregion

@@ -13,6 +13,21 @@ namespace Unity.Screenshots
     /// <remarks>This is a minimal implementation of a PNG encoder with no scanline filtering or additional features.</remarks>
     public static class PngEncoder
     {
+        #region Static Fields
+
+        private static readonly Crc32 crc32;
+
+        #endregion
+
+        #region Static Constructors
+
+        static PngEncoder()
+        {
+            crc32 = new Crc32();
+        }
+
+        #endregion
+
         #region Nested Types
 
         public class Crc32
@@ -23,6 +38,12 @@ namespace Unity.Screenshots
 
             #endregion
 
+            #region Fields
+
+            private readonly uint[] checksumTable;
+
+            #endregion
+
             #region Constructors
 
             public Crc32()
@@ -30,7 +51,7 @@ namespace Unity.Screenshots
                 checksumTable = Enumerable.Range(0, 256)
                     .Select(i =>
                     {
-                        var tableEntry = (uint) i;
+                        var tableEntry = (uint)i;
                         for (var j = 0; j < 8; j++)
                             tableEntry = (tableEntry & 1) != 0 ? generator ^ (tableEntry >> 1) : tableEntry >> 1;
 
@@ -38,12 +59,6 @@ namespace Unity.Screenshots
                     })
                     .ToArray();
             }
-
-            #endregion
-
-            #region Fields
-
-            private readonly uint[] checksumTable;
 
             #endregion
 
@@ -59,21 +74,6 @@ namespace Unity.Screenshots
 
             #endregion
         }
-
-        #endregion
-
-        #region Static Constructors
-
-        static PngEncoder()
-        {
-            crc32 = new Crc32();
-        }
-
-        #endregion
-
-        #region Static Fields
-
-        private static readonly Crc32 crc32;
 
         #endregion
 
@@ -256,7 +256,7 @@ namespace Unity.Screenshots
             if (characters.Length < 4) return null;
 
             var type = new byte[4];
-            for (var i = 0; i < type.Length; i++) type[i] = (byte) characters[i];
+            for (var i = 0; i < type.Length; i++) type[i] = (byte)characters[i];
 
             return type;
         }

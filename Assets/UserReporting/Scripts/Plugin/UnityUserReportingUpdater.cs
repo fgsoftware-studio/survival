@@ -20,20 +20,20 @@ namespace Unity.Cloud.UserReporting.Plugin
 
         #endregion
 
-        #region Fields
-
-        private int step;
-
-        private readonly WaitForEndOfFrame waitForEndOfFrame;
-
-        #endregion
-
         #region Properties
 
         /// <summary>
         ///     Gets the current item.
         /// </summary>
         public object Current { get; private set; }
+
+        #endregion
+
+        #region Fields
+
+        private int step;
+
+        private readonly WaitForEndOfFrame waitForEndOfFrame;
 
         #endregion
 

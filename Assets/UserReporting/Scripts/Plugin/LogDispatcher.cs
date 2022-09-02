@@ -6,6 +6,12 @@ namespace Assets.UserReporting.Scripts.Plugin
 {
     public static class LogDispatcher
     {
+        #region Static Fields
+
+        private static readonly List<WeakReference> listeners;
+
+        #endregion
+
         #region Static Constructors
 
         static LogDispatcher()
@@ -33,12 +39,6 @@ namespace Assets.UserReporting.Scripts.Plugin
                 }
             };
         }
-
-        #endregion
-
-        #region Static Fields
-
-        private static readonly List<WeakReference> listeners;
 
         #endregion
 

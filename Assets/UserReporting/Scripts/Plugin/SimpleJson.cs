@@ -335,7 +335,7 @@ namespace Unity.Cloud.UserReporting.Plugin.SimpleJson
 
         private static readonly char[] EscapeTable;
 
-        private static readonly char[] EscapeCharacters = {'"', '\\', '\b', '\f', '\n', '\r', '\t'};
+        private static readonly char[] EscapeCharacters = { '"', '\\', '\b', '\f', '\n', '\r', '\t' };
 
         static SimpleJson()
         {
@@ -378,7 +378,7 @@ namespace Unity.Cloud.UserReporting.Plugin.SimpleJson
         public static object DeserializeObject(string json, Type type, IJsonSerializerStrategy jsonSerializerStrategy)
         {
             var jsonObject = DeserializeObject(json);
-            return type == null || jsonObject != null && ReflectionUtils.IsAssignableFrom(jsonObject.GetType(), type)
+            return type == null || (jsonObject != null && ReflectionUtils.IsAssignableFrom(jsonObject.GetType(), type))
                 ? jsonObject
                 : (jsonSerializerStrategy ?? CurrentJsonSerializerStrategy).DeserializeObject(jsonObject, type);
         }
@@ -390,12 +390,12 @@ namespace Unity.Cloud.UserReporting.Plugin.SimpleJson
 
         public static T DeserializeObject<T>(string json, IJsonSerializerStrategy jsonSerializerStrategy)
         {
-            return (T) DeserializeObject(json, typeof(T), jsonSerializerStrategy);
+            return (T)DeserializeObject(json, typeof(T), jsonSerializerStrategy);
         }
 
         public static T DeserializeObject<T>(string json)
         {
-            return (T) DeserializeObject(json, typeof(T), null);
+            return (T)DeserializeObject(json, typeof(T), null);
         }
 
         public static string SerializeObject(object json, IJsonSerializerStrategy jsonSerializerStrategy)
@@ -662,8 +662,8 @@ namespace Unity.Cloud.UserReporting.Plugin.SimpleJson
                                             CultureInfo.InvariantCulture, out lowCodePoint))
                                         if (0xDC00 <= lowCodePoint && lowCodePoint <= 0xDFFF) // if low surrogate
                                         {
-                                            s.Append((char) codePoint);
-                                            s.Append((char) lowCodePoint);
+                                            s.Append((char)codePoint);
+                                            s.Append((char)lowCodePoint);
                                             index += 6; // skip 6 chars
                                             continue;
                                         }
@@ -673,7 +673,7 @@ namespace Unity.Cloud.UserReporting.Plugin.SimpleJson
                                 return "";
                             }
 
-                            s.Append(ConvertFromUtf32((int) codePoint));
+                            s.Append(ConvertFromUtf32((int)codePoint));
 
                             // skip 4 chars
                             index += 4;
@@ -706,9 +706,9 @@ namespace Unity.Cloud.UserReporting.Plugin.SimpleJson
                 throw new ArgumentOutOfRangeException("utf32", "The argument must be from 0 to 0x10FFFF.");
             if (0xD800 <= utf32 && utf32 <= 0xDFFF)
                 throw new ArgumentOutOfRangeException("utf32", "The argument must not be in surrogate pair range.");
-            if (utf32 < 0x10000) return new string((char) utf32, 1);
+            if (utf32 < 0x10000) return new string((char)utf32, 1);
             utf32 -= 0x10000;
-            return new string(new char[] {(char) ((utf32 >> 10) + 0xD800), (char) (utf32 % 0x0400 + 0xDC00)});
+            return new string(new char[] { (char)((utf32 >> 10) + 0xD800), (char)(utf32 % 0x0400 + 0xDC00) });
         }
 
         private static object ParseNumber(char[] json, ref int index, ref bool success)
@@ -857,7 +857,7 @@ namespace Unity.Cloud.UserReporting.Plugin.SimpleJson
                         }
                         else if (value is bool)
                         {
-                            builder.Append((bool) value ? "true" : "false");
+                            builder.Append((bool)value ? "true" : "false");
                         }
                         else if (value == null)
                         {
@@ -965,17 +965,17 @@ namespace Unity.Cloud.UserReporting.Plugin.SimpleJson
         private static bool SerializeNumber(object number, StringBuilder builder)
         {
             if (number is long)
-                builder.Append(((long) number).ToString(CultureInfo.InvariantCulture));
+                builder.Append(((long)number).ToString(CultureInfo.InvariantCulture));
             else if (number is ulong)
-                builder.Append(((ulong) number).ToString(CultureInfo.InvariantCulture));
+                builder.Append(((ulong)number).ToString(CultureInfo.InvariantCulture));
             else if (number is int)
-                builder.Append(((int) number).ToString(CultureInfo.InvariantCulture));
+                builder.Append(((int)number).ToString(CultureInfo.InvariantCulture));
             else if (number is uint)
-                builder.Append(((uint) number).ToString(CultureInfo.InvariantCulture));
+                builder.Append(((uint)number).ToString(CultureInfo.InvariantCulture));
             else if (number is decimal)
-                builder.Append(((decimal) number).ToString(CultureInfo.InvariantCulture));
+                builder.Append(((decimal)number).ToString(CultureInfo.InvariantCulture));
             else if (number is float)
-                builder.Append(((float) number).ToString(CultureInfo.InvariantCulture));
+                builder.Append(((float)number).ToString(CultureInfo.InvariantCulture));
             else
                 builder.Append(Convert.ToDouble(number, CultureInfo.InvariantCulture)
                     .ToString("r", CultureInfo.InvariantCulture));
@@ -1068,10 +1068,10 @@ namespace Unity.Cloud.UserReporting.Plugin.SimpleJson
 
         internal static readonly Type[] EmptyTypes = new Type[0];
 
-        internal static readonly Type[] ArrayConstructorParameterTypes = {typeof(int)};
+        internal static readonly Type[] ArrayConstructorParameterTypes = { typeof(int) };
 
         private static readonly string[] Iso8601Format =
-            {@"yyyy-MM-dd\THH:mm:ss.FFFFFFF\Z", @"yyyy-MM-dd\THH:mm:ss\Z", @"yyyy-MM-dd\THH:mm:ssK"};
+            { @"yyyy-MM-dd\THH:mm:ss.FFFFFFF\Z", @"yyyy-MM-dd\THH:mm:ss\Z", @"yyyy-MM-dd\THH:mm:ssK" };
 
         public PocoJsonSerializerStrategy()
         {
@@ -1161,16 +1161,17 @@ namespace Unity.Cloud.UserReporting.Plugin.SimpleJson
             {
                 if (str.Length != 0) // We know it can't be null now.
                 {
-                    if (type == typeof(DateTime) || ReflectionUtils.IsNullableType(type) &&
-                        Nullable.GetUnderlyingType(type) == typeof(DateTime))
+                    if (type == typeof(DateTime) || (ReflectionUtils.IsNullableType(type) &&
+                                                     Nullable.GetUnderlyingType(type) == typeof(DateTime)))
                         return DateTime.ParseExact(str, Iso8601Format, CultureInfo.InvariantCulture,
                             DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal);
-                    if (type == typeof(DateTimeOffset) || ReflectionUtils.IsNullableType(type) &&
-                        Nullable.GetUnderlyingType(type) == typeof(DateTimeOffset))
+                    if (type == typeof(DateTimeOffset) || (ReflectionUtils.IsNullableType(type) &&
+                                                           Nullable.GetUnderlyingType(type) == typeof(DateTimeOffset)))
                         return DateTimeOffset.ParseExact(str, Iso8601Format, CultureInfo.InvariantCulture,
                             DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal);
-                    if (type == typeof(Guid) || ReflectionUtils.IsNullableType(type) &&
-                        Nullable.GetUnderlyingType(type) == typeof(Guid)) return new Guid(str);
+                    if (type == typeof(Guid) || (ReflectionUtils.IsNullableType(type) &&
+                                                 Nullable.GetUnderlyingType(type) == typeof(Guid)))
+                        return new Guid(str);
                     if (type == typeof(Uri))
                     {
                         var isValid = Uri.IsWellFormedUriString(str, UriKind.RelativeOrAbsolute);
@@ -1180,8 +1181,9 @@ namespace Unity.Cloud.UserReporting.Plugin.SimpleJson
                     }
 
                     if (type == typeof(string)) return str;
-                    if (type == typeof(TimeSpan) || ReflectionUtils.IsNullableType(type) &&
-                        Nullable.GetUnderlyingType(type) == typeof(TimeSpan)) return TimeSpan.Parse(str);
+                    if (type == typeof(TimeSpan) || (ReflectionUtils.IsNullableType(type) &&
+                                                     Nullable.GetUnderlyingType(type) == typeof(TimeSpan)))
+                        return TimeSpan.Parse(str);
                     return Convert.ChangeType(str, type, CultureInfo.InvariantCulture);
                 }
 
@@ -1202,8 +1204,8 @@ namespace Unity.Cloud.UserReporting.Plugin.SimpleJson
             if (value is bool) return value;
             var valueIsLong = value is long;
             var valueIsDouble = value is double;
-            if (valueIsLong && type == typeof(long) || valueIsDouble && type == typeof(double)) return value;
-            if (valueIsDouble && type != typeof(double) || valueIsLong && type != typeof(long))
+            if ((valueIsLong && type == typeof(long)) || (valueIsDouble && type == typeof(double))) return value;
+            if ((valueIsDouble && type != typeof(double)) || (valueIsLong && type != typeof(long)))
             {
                 obj = type == typeof(int) || type == typeof(long) || type == typeof(double) || type == typeof(float) ||
                       type == typeof(bool) || type == typeof(decimal) || type == typeof(byte) || type == typeof(short)
@@ -1223,7 +1225,7 @@ namespace Unity.Cloud.UserReporting.Plugin.SimpleJson
                         var keyType = types[0];
                         var valueType = types[1];
                         var genericType = typeof(Dictionary<,>).MakeGenericType(keyType, valueType);
-                        var dict = (IDictionary) ConstructorCache[genericType]();
+                        var dict = (IDictionary)ConstructorCache[genericType]();
                         foreach (var kvp in jsonObject) dict.Add(kvp.Key, DeserializeObject(kvp.Value, valueType));
                         obj = dict;
                     }
@@ -1267,7 +1269,7 @@ namespace Unity.Cloud.UserReporting.Plugin.SimpleJson
                         IList list = null;
                         if (type.IsArray)
                         {
-                            list = (IList) ConstructorCache[type](jsonObject.Count);
+                            list = (IList)ConstructorCache[type](jsonObject.Count);
                             var i = 0;
                             foreach (var o in jsonObject) list[i++] = DeserializeObject(o, type.GetElementType());
                         }
@@ -1275,8 +1277,8 @@ namespace Unity.Cloud.UserReporting.Plugin.SimpleJson
                                  ReflectionUtils.IsAssignableFrom(typeof(IList), type))
                         {
                             var innerType = ReflectionUtils.GetGenericListElementType(type);
-                            list = (IList) (ConstructorCache[type] ??
-                                            ConstructorCache[typeof(List<>).MakeGenericType(innerType)])();
+                            list = (IList)(ConstructorCache[type] ??
+                                           ConstructorCache[typeof(List<>).MakeGenericType(innerType)])();
                             foreach (var o in jsonObject) list.Add(DeserializeObject(o, innerType));
                         }
 
@@ -1303,21 +1305,21 @@ namespace Unity.Cloud.UserReporting.Plugin.SimpleJson
             var returnValue = true;
             if (input is DateTime)
             {
-                output = ((DateTime) input).ToUniversalTime()
+                output = ((DateTime)input).ToUniversalTime()
                     .ToString(Iso8601Format[0], CultureInfo.InvariantCulture);
             }
             else if (input is DateTimeOffset)
             {
-                output = ((DateTimeOffset) input).ToUniversalTime()
+                output = ((DateTimeOffset)input).ToUniversalTime()
                     .ToString(Iso8601Format[0], CultureInfo.InvariantCulture);
             }
             else if (input is TimeSpan)
             {
-                output = ((TimeSpan) input).ToString();
+                output = ((TimeSpan)input).ToString();
             }
             else if (input is Guid)
             {
-                output = ((Guid) input).ToString("D");
+                output = ((Guid)input).ToString("D");
             }
             else if (input is Uri)
             {
@@ -1786,7 +1788,7 @@ namespace Unity.Cloud.UserReporting.Plugin.SimpleJson
             public static SetDelegate GetSetMethodByReflection(PropertyInfo propertyInfo)
             {
                 var methodInfo = GetSetterMethodInfo(propertyInfo);
-                return delegate(object source, object value) { methodInfo.Invoke(source, new object[] {value}); };
+                return delegate(object source, object value) { methodInfo.Invoke(source, new object[] { value }); };
             }
 
             public static SetDelegate GetSetMethodByReflection(FieldInfo fieldInfo)
@@ -1861,7 +1863,7 @@ namespace Unity.Cloud.UserReporting.Plugin.SimpleJson
 
                 private Dictionary<TKey, TValue> _dictionary;
 
-                private readonly object _lock = new object();
+                private readonly object _lock = new();
 
                 private readonly ThreadSafeDictionaryValueFactory<TKey, TValue> _valueFactory;
 

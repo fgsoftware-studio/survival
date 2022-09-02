@@ -4,9 +4,9 @@ using UnityEngine;
 public class BarrelSpawner : MonoBehaviour
 {
     [SerializeField] private GameObject barrel;
+    public int lifetime;
     private Vector3 position;
     private Quaternion rotation;
-    public int lifetime;
 
     private void Start()
     {

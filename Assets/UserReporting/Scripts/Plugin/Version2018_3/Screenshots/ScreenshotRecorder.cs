@@ -11,6 +11,27 @@ namespace Unity.Screenshots
 {
     public class ScreenshotRecorder
     {
+        #region Static Fields
+
+        private static int nextIdentifier;
+
+        #endregion
+
+        #region Fields
+
+        private readonly List<ScreenshotOperation> operationPool;
+
+        #endregion
+
+        #region Constructors
+
+        public ScreenshotRecorder()
+        {
+            operationPool = new List<ScreenshotOperation>();
+        }
+
+        #endregion
+
         #region Nested Types
 
         private class ScreenshotOperation
@@ -101,27 +122,6 @@ namespace Unity.Screenshots
 
             #endregion
         }
-
-        #endregion
-
-        #region Static Fields
-
-        private static int nextIdentifier;
-
-        #endregion
-
-        #region Constructors
-
-        public ScreenshotRecorder()
-        {
-            operationPool = new List<ScreenshotOperation>();
-        }
-
-        #endregion
-
-        #region Fields
-
-        private readonly List<ScreenshotOperation> operationPool;
 
         #endregion
 

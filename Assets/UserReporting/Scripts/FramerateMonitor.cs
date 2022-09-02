@@ -18,22 +18,6 @@ public class FramerateMonitor : UserReportingMonitor
 
     #endregion
 
-    #region Fields
-
-    private float duration;
-
-    /// <summary>
-    ///     Gets or sets the maximum duration in seconds.
-    /// </summary>
-    public float MaximumDurationInSeconds;
-
-    /// <summary>
-    ///     Gets or sets the minimum framerate.
-    /// </summary>
-    public float MinimumFramerate;
-
-    #endregion
-
     #region Methods
 
     private void Update()
@@ -51,6 +35,22 @@ public class FramerateMonitor : UserReportingMonitor
             Trigger();
         }
     }
+
+    #endregion
+
+    #region Fields
+
+    private float duration;
+
+    /// <summary>
+    ///     Gets or sets the maximum duration in seconds.
+    /// </summary>
+    public float MaximumDurationInSeconds;
+
+    /// <summary>
+    ///     Gets or sets the minimum framerate.
+    /// </summary>
+    public float MinimumFramerate;
 
     #endregion
 }

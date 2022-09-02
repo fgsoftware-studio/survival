@@ -22,6 +22,18 @@ public class UserReportingMonitor : MonoBehaviour
 
     #endregion
 
+    #region Virtual Methods
+
+    /// <summary>
+    ///     Called when the monitor is triggered.
+    /// </summary>
+    protected virtual void Triggered()
+    {
+        // Empty
+    }
+
+    #endregion
+
     #region Fields
 
     /// <summary>
@@ -90,18 +102,6 @@ public class UserReportingMonitor : MonoBehaviour
             br.IsHiddenWithoutDimension = IsHiddenWithoutDimension;
             UnityUserReporting.CurrentClient.SendUserReport(br, (success, br2) => { Triggered(); });
         });
-    }
-
-    #endregion
-
-    #region Virtual Methods
-
-    /// <summary>
-    ///     Called when the monitor is triggered.
-    /// </summary>
-    protected virtual void Triggered()
-    {
-        // Empty
     }
 
     #endregion

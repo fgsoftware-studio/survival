@@ -10,6 +10,19 @@ namespace Unity.Cloud
     /// <typeparam name="T">The type of the items in the list.</typeparam>
     public class CyclicalList<T> : IList<T>
     {
+        #region Constructors
+
+        /// <summary>
+        ///     Creates a new instance of the <see cref="CyclicalList{T}" /> class.
+        /// </summary>
+        /// <param name="capacity">The capacity.</param>
+        public CyclicalList(int capacity)
+        {
+            items = new T[capacity];
+        }
+
+        #endregion
+
         #region Nested Types
 
         /// <summary>
@@ -89,19 +102,6 @@ namespace Unity.Cloud
             }
 
             #endregion
-        }
-
-        #endregion
-
-        #region Constructors
-
-        /// <summary>
-        ///     Creates a new instance of the <see cref="CyclicalList{T}" /> class.
-        /// </summary>
-        /// <param name="capacity">The capacity.</param>
-        public CyclicalList(int capacity)
-        {
-            items = new T[capacity];
         }
 
         #endregion

@@ -32,6 +32,18 @@ public class UserReportingScript : MonoBehaviour
 
     #endregion
 
+    #region Virtual Methods
+
+    /// <summary>
+    ///     Occurs when a user report is submitting.
+    /// </summary>
+    protected virtual void RaiseUserReportSubmitting()
+    {
+        if (UserReportSubmitting != null) UserReportSubmitting.Invoke();
+    }
+
+    #endregion
+
     #region Fields
 
     /// <summary>
@@ -407,18 +419,6 @@ public class UserReportingScript : MonoBehaviour
         // The UnityUserReportingUpdater updates the client at multiple points during the current frame.
         unityUserReportingUpdater.Reset();
         StartCoroutine(unityUserReportingUpdater);
-    }
-
-    #endregion
-
-    #region Virtual Methods
-
-    /// <summary>
-    ///     Occurs when a user report is submitting.
-    /// </summary>
-    protected virtual void RaiseUserReportSubmitting()
-    {
-        if (UserReportSubmitting != null) UserReportSubmitting.Invoke();
     }
 
     #endregion

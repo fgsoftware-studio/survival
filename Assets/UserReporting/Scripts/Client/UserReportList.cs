@@ -19,6 +19,27 @@ namespace Unity.Cloud.UserReporting
 
         #endregion
 
+        #region Methods
+
+        /// <summary>
+        ///     Completes the list. This only need to be called by the creator of the list.
+        /// </summary>
+        /// <param name="originalLimit">The original limit.</param>
+        /// <param name="continuationToken">The continuation token.</param>
+        public void Complete(int originalLimit, string continuationToken)
+        {
+            if (UserReportPreviews.Count > 0)
+                if (UserReportPreviews.Count > originalLimit)
+                {
+                    while (UserReportPreviews.Count > originalLimit)
+                        UserReportPreviews.RemoveAt(UserReportPreviews.Count - 1);
+                    ContinuationToken = continuationToken;
+                    HasMore = true;
+                }
+        }
+
+        #endregion
+
         #region Properties
 
         /// <summary>
@@ -40,27 +61,6 @@ namespace Unity.Cloud.UserReporting
         ///     Gets or sets the user report previews.
         /// </summary>
         public List<UserReportPreview> UserReportPreviews { get; set; }
-
-        #endregion
-
-        #region Methods
-
-        /// <summary>
-        ///     Completes the list. This only need to be called by the creator of the list.
-        /// </summary>
-        /// <param name="originalLimit">The original limit.</param>
-        /// <param name="continuationToken">The continuation token.</param>
-        public void Complete(int originalLimit, string continuationToken)
-        {
-            if (UserReportPreviews.Count > 0)
-                if (UserReportPreviews.Count > originalLimit)
-                {
-                    while (UserReportPreviews.Count > originalLimit)
-                        UserReportPreviews.RemoveAt(UserReportPreviews.Count - 1);
-                    ContinuationToken = continuationToken;
-                    HasMore = true;
-                }
-        }
 
         #endregion
     }

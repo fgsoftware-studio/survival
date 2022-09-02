@@ -6,10 +6,38 @@ namespace Unity.Screenshots
 {
     public class ScreenshotManager
     {
+        #region Constructors
+
+        public ScreenshotManager()
+        {
+            screenshotRecorder = new ScreenshotRecorder();
+            screenshotCallbackDelegate = ScreenshotCallback;
+            screenshotOperations = new List<ScreenshotOperation>();
+        }
+
+        #endregion
+
         #region Nested Types
 
         private class ScreenshotOperation
         {
+            #region Methods
+
+            public void Use()
+            {
+                Callback = null;
+                Data = null;
+                FrameNumber = 0;
+                IsAwaiting = true;
+                IsComplete = false;
+                IsInUse = true;
+                MaximumHeight = 0;
+                MaximumWidth = 0;
+                Source = null;
+            }
+
+            #endregion
+
             #region Properties
 
             public Action<int, byte[]> Callback { get; set; }
@@ -31,34 +59,6 @@ namespace Unity.Screenshots
             public object Source { get; set; }
 
             #endregion
-
-            #region Methods
-
-            public void Use()
-            {
-                Callback = null;
-                Data = null;
-                FrameNumber = 0;
-                IsAwaiting = true;
-                IsComplete = false;
-                IsInUse = true;
-                MaximumHeight = 0;
-                MaximumWidth = 0;
-                Source = null;
-            }
-
-            #endregion
-        }
-
-        #endregion
-
-        #region Constructors
-
-        public ScreenshotManager()
-        {
-            screenshotRecorder = new ScreenshotRecorder();
-            screenshotCallbackDelegate = ScreenshotCallback;
-            screenshotOperations = new List<ScreenshotOperation>();
         }
 
         #endregion

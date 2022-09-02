@@ -18,6 +18,40 @@ namespace Unity.Cloud.UserReporting.Plugin.Version2018_3
     /// </summary>
     public class AsyncUnityUserReportingPlatform : IUserReportingPlatform, ILogListener
     {
+        #region Constructors
+
+        /// <summary>
+        ///     Creates a new instance of the <see cref="UnityUserReportingPlatform" /> class.
+        /// </summary>
+        public AsyncUnityUserReportingPlatform()
+        {
+            logMessages = new List<LogMessage>();
+            postOperations = new List<PostOperation>();
+            screenshotManager = new ScreenshotManager();
+
+            // Recorders
+            profilerSamplers = new List<ProfilerSampler>();
+            var samplerNames = GetSamplerNames();
+            foreach (var kvp in samplerNames)
+            {
+                var sampler = Sampler.Get(kvp.Key);
+                if (sampler.isValid)
+                {
+                    var recorder = sampler.GetRecorder();
+                    recorder.enabled = true;
+                    var profilerSampler = new ProfilerSampler();
+                    profilerSampler.Name = kvp.Value;
+                    profilerSampler.Recorder = recorder;
+                    profilerSamplers.Add(profilerSampler);
+                }
+            }
+
+            // Log Messages
+            LogDispatcher.Register(this);
+        }
+
+        #endregion
+
         #region Nested Types
 
         /// <summary>
@@ -102,40 +136,6 @@ namespace Unity.Cloud.UserReporting.Plugin.Version2018_3
             }
 
             #endregion
-        }
-
-        #endregion
-
-        #region Constructors
-
-        /// <summary>
-        ///     Creates a new instance of the <see cref="UnityUserReportingPlatform" /> class.
-        /// </summary>
-        public AsyncUnityUserReportingPlatform()
-        {
-            logMessages = new List<LogMessage>();
-            postOperations = new List<PostOperation>();
-            screenshotManager = new ScreenshotManager();
-
-            // Recorders
-            profilerSamplers = new List<ProfilerSampler>();
-            var samplerNames = GetSamplerNames();
-            foreach (var kvp in samplerNames)
-            {
-                var sampler = Sampler.Get(kvp.Key);
-                if (sampler.isValid)
-                {
-                    var recorder = sampler.GetRecorder();
-                    recorder.enabled = true;
-                    var profilerSampler = new ProfilerSampler();
-                    profilerSampler.Name = kvp.Value;
-                    profilerSampler.Recorder = recorder;
-                    profilerSamplers.Add(profilerSampler);
-                }
-            }
-
-            // Log Messages
-            LogDispatcher.Register(this);
         }
 
         #endregion

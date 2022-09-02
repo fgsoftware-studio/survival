@@ -21,25 +21,25 @@ namespace Unity.Screenshots
             // Implementation
             var width = stride / 4;
             var height = dataRgba.Length / stride;
-            var ratioX = maximumWidth / (float) width;
-            var ratioY = maximumHeight / (float) height;
+            var ratioX = maximumWidth / (float)width;
+            var ratioY = maximumHeight / (float)height;
             var ratio = Math.Min(ratioX, ratioY);
             if (ratio < 1)
             {
-                var downsampledWidth = (int) Math.Round(width * ratio);
-                var downsampledHeight = (int) Math.Round(height * ratio);
+                var downsampledWidth = (int)Math.Round(width * ratio);
+                var downsampledHeight = (int)Math.Round(height * ratio);
                 var downsampledData = new float[downsampledWidth * downsampledHeight * 4];
-                var sampleWidth = width / (float) downsampledWidth;
-                var sampleHeight = height / (float) downsampledHeight;
-                var kernelWidth = (int) Math.Floor(sampleWidth);
-                var kernelHeight = (int) Math.Floor(sampleHeight);
+                var sampleWidth = width / (float)downsampledWidth;
+                var sampleHeight = height / (float)downsampledHeight;
+                var kernelWidth = (int)Math.Floor(sampleWidth);
+                var kernelHeight = (int)Math.Floor(sampleHeight);
                 var kernelSize = kernelWidth * kernelHeight;
                 for (var y = 0; y < downsampledHeight; y++)
                 for (var x = 0; x < downsampledWidth; x++)
                 {
                     var destinationIndex = y * downsampledWidth * 4 + x * 4;
-                    var sampleLowerX = (int) Math.Floor(x * sampleWidth);
-                    var sampleLowerY = (int) Math.Floor(y * sampleHeight);
+                    var sampleLowerX = (int)Math.Floor(x * sampleWidth);
+                    var sampleLowerY = (int)Math.Floor(y * sampleHeight);
                     var sampleUpperX = sampleLowerX + kernelWidth;
                     var sampleUpperY = sampleLowerY + kernelHeight;
                     for (var sampleY = sampleLowerY; sampleY < sampleUpperY; sampleY++)
@@ -68,10 +68,10 @@ namespace Unity.Screenshots
                 {
                     var sourceIndex = (downsampledHeight - 1 - y) * downsampledWidth * 4 + x * 4;
                     var destinationIndex = y * downsampledWidth * 4 + x * 4;
-                    flippedData[destinationIndex] += (byte) downsampledData[sourceIndex];
-                    flippedData[destinationIndex + 1] += (byte) downsampledData[sourceIndex + 1];
-                    flippedData[destinationIndex + 2] += (byte) downsampledData[sourceIndex + 2];
-                    flippedData[destinationIndex + 3] += (byte) downsampledData[sourceIndex + 3];
+                    flippedData[destinationIndex] += (byte)downsampledData[sourceIndex];
+                    flippedData[destinationIndex + 1] += (byte)downsampledData[sourceIndex + 1];
+                    flippedData[destinationIndex + 2] += (byte)downsampledData[sourceIndex + 2];
+                    flippedData[destinationIndex + 3] += (byte)downsampledData[sourceIndex + 3];
                 }
 
                 downsampledStride = downsampledWidth * 4;
