@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.44657868, g: 0.49641263, b: 0.57481706, a: 1}
+  m_IndirectSpecularColor: {r: 0, g: 0, b: 0, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -202,7 +202,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 499971429}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -2.3224735, y: 1.7266066, z: 0.77859974}
+  m_LocalPosition: {x: -2.3224735, y: 1.6326065, z: 0.77859974}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -336,6 +336,10 @@ PrefabInstance:
     - target: {fileID: 5845895911139978127, guid: 2c82776da337e974697f0a56c5518513, type: 3}
       propertyPath: m_Name
       value: barrel (1)
+      objectReference: {fileID: 0}
+    - target: {fileID: 5845895911139978127, guid: 2c82776da337e974697f0a56c5518513, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6515332034193813813, guid: 2c82776da337e974697f0a56c5518513, type: 3}
       propertyPath: m_RootOrder
@@ -770,7 +774,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 6b911390c5825014e8377183a7837d3f, type: 2}
+  - {fileID: 2100000, guid: 9717510d9d96d7f49b100305f448cd8f, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -833,7 +837,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 722674766989590520}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1, z: 0}
+  m_LocalPosition: {x: 0, y: 0.943, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -973,7 +977,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1970021901057027970}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -2.3224735, y: 1.7266066, z: 0.77859974}
+  m_LocalPosition: {x: -2.3224735, y: 1.6326065, z: 0.77859974}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1010,7 +1014,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 62899f850307741f2a39c98a8b639597, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_Actions: {fileID: -944628639613478452, guid: 4419d82f33d36e848b3ed5af4c8da37e, type: 3}
+  m_Actions: {fileID: -944628639613478452, guid: f1971e7d2053be24c8510ea31a56daa1, type: 3}
   m_NotificationBehavior: 0
   m_UIInputModule: {fileID: 0}
   m_DeviceLostEvent:
@@ -1143,7 +1147,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3984390453904927726}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 16.9, y: 1.22, z: 15.46}
+  m_LocalPosition: {x: 16.9, y: 1.126, z: 15.46}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1200,15 +1204,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 23a19ca6a433098458a17a076d06ca42, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  MoveSpeed: 4
-  SprintSpeed: 6
-  RotationSpeed: 1
+  MoveSpeed: 5
+  SprintSpeed: 10
+  RotationSpeed: 50
   SpeedChangeRate: 10
   JumpHeight: 1.2
   Gravity: -15
   JumpTimeout: 0.1
   FallTimeout: 0.15
-  Grounded: 1
+  Grounded: 0
   GroundedOffset: -0.14
   GroundedRadius: 0.5
   GroundLayers:
@@ -1227,6 +1231,10 @@ PrefabInstance:
     - target: {fileID: 5845895911139978127, guid: 2c82776da337e974697f0a56c5518513, type: 3}
       propertyPath: m_Name
       value: barrel
+      objectReference: {fileID: 0}
+    - target: {fileID: 5845895911139978127, guid: 2c82776da337e974697f0a56c5518513, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6515332034193813813, guid: 2c82776da337e974697f0a56c5518513, type: 3}
       propertyPath: m_RootOrder
