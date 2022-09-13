@@ -37,7 +37,7 @@ public class Movement : MonoBehaviour
     {
         get
         {
-            return _playerInput.currentControlScheme == "KeyboardMouse";
+            if (_playerInput.currentControlScheme == "KeyboardMouse") return true;
             return false;
         }
     }

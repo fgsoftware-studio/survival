@@ -4,7 +4,7 @@ using UnityEngine;
 namespace Unity.Cloud.UserReporting.Plugin
 {
     /// <summary>
-    ///     Provides a starting point for Unity User Reporting.
+    /// Provides a starting point for Unity User Reporting.
     /// </summary>
     public static class UnityUserReporting
     {
@@ -17,16 +17,19 @@ namespace Unity.Cloud.UserReporting.Plugin
         #region Static Properties
 
         /// <summary>
-        ///     Gets the current client.
+        /// Gets the current client.
         /// </summary>
         public static UserReportingClient CurrentClient
         {
             get
             {
-                if (currentClient == null) Configure();
-                return currentClient;
+                if (UnityUserReporting.currentClient == null)
+                {
+                    UnityUserReporting.Configure();
+                }
+                return UnityUserReporting.currentClient;
             }
-            private set => currentClient = value;
+            private set { UnityUserReporting.currentClient = value; }
         }
 
         #endregion
@@ -34,103 +37,96 @@ namespace Unity.Cloud.UserReporting.Plugin
         #region Static Methods
 
         /// <summary>
-        ///     Configures Unity User Reporting.
+        /// Configures Unity User Reporting.
         /// </summary>
         /// <param name="endpoint">The endpoint.</param>
         /// <param name="projectIdentifier">The project identifier.</param>
         /// <param name="platform">The plaform.</param>
         /// <param name="configuration">The configuration.</param>
-        public static void Configure(string endpoint, string projectIdentifier, IUserReportingPlatform platform,
-            UserReportingClientConfiguration configuration)
+        public static void Configure(string endpoint, string projectIdentifier, IUserReportingPlatform platform, UserReportingClientConfiguration configuration)
         {
-            CurrentClient = new UserReportingClient(endpoint, projectIdentifier, platform, configuration);
+            UnityUserReporting.CurrentClient = new UserReportingClient(endpoint, projectIdentifier, platform, configuration);
         }
 
         /// <summary>
-        ///     Configures Unity User Reporting.
+        /// Configures Unity User Reporting.
         /// </summary>
         /// <param name="endpoint"></param>
         /// <param name="projectIdentifier"></param>
         /// <param name="configuration"></param>
-        public static void Configure(string endpoint, string projectIdentifier,
-            UserReportingClientConfiguration configuration)
+        public static void Configure(string endpoint, string projectIdentifier, UserReportingClientConfiguration configuration)
         {
-            CurrentClient = new UserReportingClient(endpoint, projectIdentifier, GetPlatform(), configuration);
+            UnityUserReporting.CurrentClient = new UserReportingClient(endpoint, projectIdentifier, UnityUserReporting.GetPlatform(), configuration);
         }
 
         /// <summary>
-        ///     Configures Unity User Reporting.
+        /// Configures Unity User Reporting.
         /// </summary>
         /// <param name="projectIdentifier"></param>
         /// <param name="configuration"></param>
         public static void Configure(string projectIdentifier, UserReportingClientConfiguration configuration)
         {
-            Configure("https://userreporting.cloud.unity3d.com", projectIdentifier, GetPlatform(), configuration);
+            UnityUserReporting.Configure("https://userreporting.cloud.unity3d.com", projectIdentifier, UnityUserReporting.GetPlatform(), configuration);
         }
 
         /// <summary>
-        ///     Configures Unity User Reporting.
+        /// Configures Unity User Reporting.
         /// </summary>
         /// <param name="projectIdentifier"></param>
         public static void Configure(string projectIdentifier)
         {
-            Configure("https://userreporting.cloud.unity3d.com", projectIdentifier, GetPlatform(),
-                new UserReportingClientConfiguration());
+            UnityUserReporting.Configure("https://userreporting.cloud.unity3d.com", projectIdentifier, UnityUserReporting.GetPlatform(), new UserReportingClientConfiguration());
         }
 
         /// <summary>
-        ///     Configures Unity User Reporting.
+        /// Configures Unity User Reporting.
         /// </summary>
         public static void Configure()
         {
-            Configure("https://userreporting.cloud.unity3d.com", Application.cloudProjectId, GetPlatform(),
-                new UserReportingClientConfiguration());
+            UnityUserReporting.Configure("https://userreporting.cloud.unity3d.com", Application.cloudProjectId, UnityUserReporting.GetPlatform(), new UserReportingClientConfiguration());
         }
 
         /// <summary>
-        ///     Configures Unity User Reporting.
+        /// Configures Unity User Reporting.
         /// </summary>
         /// <param name="configuration"></param>
         public static void Configure(UserReportingClientConfiguration configuration)
         {
-            Configure("https://userreporting.cloud.unity3d.com", Application.cloudProjectId, GetPlatform(),
-                configuration);
+            UnityUserReporting.Configure("https://userreporting.cloud.unity3d.com", Application.cloudProjectId, UnityUserReporting.GetPlatform(), configuration);
         }
 
         /// <summary>
-        ///     Configures Unity User Reporting.
+        /// Configures Unity User Reporting.
         /// </summary>
         /// <param name="projectIdentifier"></param>
         /// <param name="platform"></param>
         /// <param name="configuration"></param>
-        public static void Configure(string projectIdentifier, IUserReportingPlatform platform,
-            UserReportingClientConfiguration configuration)
+        public static void Configure(string projectIdentifier, IUserReportingPlatform platform, UserReportingClientConfiguration configuration)
         {
-            Configure("https://userreporting.cloud.unity3d.com", projectIdentifier, platform, configuration);
+            UnityUserReporting.Configure("https://userreporting.cloud.unity3d.com", projectIdentifier, platform, configuration);
         }
 
         /// <summary>
-        ///     Configures Unity User Reporting.
+        /// Configures Unity User Reporting.
         /// </summary>
         /// <param name="platform"></param>
         /// <param name="configuration"></param>
         public static void Configure(IUserReportingPlatform platform, UserReportingClientConfiguration configuration)
         {
-            Configure("https://userreporting.cloud.unity3d.com", Application.cloudProjectId, platform, configuration);
+            UnityUserReporting.Configure("https://userreporting.cloud.unity3d.com", Application.cloudProjectId, platform, configuration);
         }
 
         /// <summary>
-        ///     Configures Unity User Reporting.
+        /// Configures Unity User Reporting.
         /// </summary>
         /// <param name="platform"></param>
         public static void Configure(IUserReportingPlatform platform)
         {
-            Configure("https://userreporting.cloud.unity3d.com", Application.cloudProjectId, platform,
-                new UserReportingClientConfiguration());
+            UnityUserReporting.Configure("https://userreporting.cloud.unity3d.com", Application.cloudProjectId, platform, new UserReportingClientConfiguration());
         }
 
         /// <summary>
-        ///     Gets the platform.
+        /// Gets the platform.
         /// </summary>
         /// <returns>The platform.</returns>
         private static IUserReportingPlatform GetPlatform()
@@ -139,12 +135,15 @@ namespace Unity.Cloud.UserReporting.Plugin
         }
 
         /// <summary>
-        ///     Uses an existing client.
+        /// Uses an existing client.
         /// </summary>
         /// <param name="client">The client.</param>
         public static void Use(UserReportingClient client)
         {
-            if (client != null) CurrentClient = client;
+            if (client != null)
+            {
+                UnityUserReporting.CurrentClient = client;
+            }
         }
 
         #endregion

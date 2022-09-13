@@ -6,38 +6,10 @@ namespace Unity.Screenshots
 {
     public class ScreenshotManager
     {
-        #region Constructors
-
-        public ScreenshotManager()
-        {
-            screenshotRecorder = new ScreenshotRecorder();
-            screenshotCallbackDelegate = ScreenshotCallback;
-            screenshotOperations = new List<ScreenshotOperation>();
-        }
-
-        #endregion
-
         #region Nested Types
 
         private class ScreenshotOperation
         {
-            #region Methods
-
-            public void Use()
-            {
-                Callback = null;
-                Data = null;
-                FrameNumber = 0;
-                IsAwaiting = true;
-                IsComplete = false;
-                IsInUse = true;
-                MaximumHeight = 0;
-                MaximumWidth = 0;
-                Source = null;
-            }
-
-            #endregion
-
             #region Properties
 
             public Action<int, byte[]> Callback { get; set; }
@@ -59,17 +31,45 @@ namespace Unity.Screenshots
             public object Source { get; set; }
 
             #endregion
+
+            #region Methods
+
+            public void Use()
+            {
+                this.Callback = null;
+                this.Data = null;
+                this.FrameNumber = 0;
+                this.IsAwaiting = true;
+                this.IsComplete = false;
+                this.IsInUse = true;
+                this.MaximumHeight = 0;
+                this.MaximumWidth = 0;
+                this.Source = null;
+            }
+
+            #endregion
+        }
+
+        #endregion
+
+        #region Constructors
+
+        public ScreenshotManager()
+        {
+            this.screenshotRecorder = new ScreenshotRecorder();
+            this.screenshotCallbackDelegate = this.ScreenshotCallback;
+            this.screenshotOperations = new List<ScreenshotOperation>();
         }
 
         #endregion
 
         #region Fields
 
-        private readonly Action<byte[], object> screenshotCallbackDelegate;
+        private Action<byte[], object> screenshotCallbackDelegate;
 
-        private readonly List<ScreenshotOperation> screenshotOperations;
+        private List<ScreenshotOperation> screenshotOperations;
 
-        private readonly ScreenshotRecorder screenshotRecorder;
+        private ScreenshotRecorder screenshotRecorder;
 
         #endregion
 
@@ -77,45 +77,49 @@ namespace Unity.Screenshots
 
         private ScreenshotOperation GetScreenshotOperation()
         {
-            foreach (var screenshotOperation in screenshotOperations)
+            foreach (ScreenshotOperation screenshotOperation in this.screenshotOperations)
+            {
                 if (!screenshotOperation.IsInUse)
                 {
                     screenshotOperation.Use();
                     return screenshotOperation;
                 }
-
-            var newScreenshotOperation = new ScreenshotOperation();
+            }
+            ScreenshotOperation newScreenshotOperation = new ScreenshotOperation();
             newScreenshotOperation.Use();
-            screenshotOperations.Add(newScreenshotOperation);
+            this.screenshotOperations.Add(newScreenshotOperation);
             return newScreenshotOperation;
         }
 
         public void OnEndOfFrame()
         {
-            foreach (var screenshotOperation in screenshotOperations)
+            foreach (ScreenshotOperation screenshotOperation in this.screenshotOperations)
+            {
                 if (screenshotOperation.IsInUse)
                 {
                     if (screenshotOperation.IsAwaiting)
                     {
                         screenshotOperation.IsAwaiting = false;
                         if (screenshotOperation.Source == null)
-                            screenshotRecorder.Screenshot(screenshotOperation.MaximumWidth,
-                                screenshotOperation.MaximumHeight, ScreenshotType.Png, screenshotCallbackDelegate,
-                                screenshotOperation);
+                        {
+                            this.screenshotRecorder.Screenshot(screenshotOperation.MaximumWidth, screenshotOperation.MaximumHeight, ScreenshotType.Png, this.screenshotCallbackDelegate, screenshotOperation);
+                        }
                         else if (screenshotOperation.Source is Camera)
-                            screenshotRecorder.Screenshot(screenshotOperation.Source as Camera,
-                                screenshotOperation.MaximumWidth, screenshotOperation.MaximumHeight, ScreenshotType.Png,
-                                screenshotCallbackDelegate, screenshotOperation);
+                        {
+                            this.screenshotRecorder.Screenshot(screenshotOperation.Source as Camera, screenshotOperation.MaximumWidth, screenshotOperation.MaximumHeight, ScreenshotType.Png, this.screenshotCallbackDelegate, screenshotOperation);
+                        }
                         else if (screenshotOperation.Source is RenderTexture)
-                            screenshotRecorder.Screenshot(screenshotOperation.Source as RenderTexture,
-                                screenshotOperation.MaximumWidth, screenshotOperation.MaximumHeight, ScreenshotType.Png,
-                                screenshotCallbackDelegate, screenshotOperation);
+                        {
+                            this.screenshotRecorder.Screenshot(screenshotOperation.Source as RenderTexture, screenshotOperation.MaximumWidth, screenshotOperation.MaximumHeight, ScreenshotType.Png, this.screenshotCallbackDelegate, screenshotOperation);
+                        }
                         else if (screenshotOperation.Source is Texture2D)
-                            screenshotRecorder.Screenshot(screenshotOperation.Source as Texture2D,
-                                screenshotOperation.MaximumWidth, screenshotOperation.MaximumHeight, ScreenshotType.Png,
-                                screenshotCallbackDelegate, screenshotOperation);
+                        {
+                            this.screenshotRecorder.Screenshot(screenshotOperation.Source as Texture2D, screenshotOperation.MaximumWidth, screenshotOperation.MaximumHeight, ScreenshotType.Png, this.screenshotCallbackDelegate, screenshotOperation);
+                        }
                         else
-                            ScreenshotCallback(null, screenshotOperation);
+                        {
+                            this.ScreenshotCallback(null, screenshotOperation);
+                        }
                     }
                     else if (screenshotOperation.IsComplete)
                     {
@@ -123,7 +127,9 @@ namespace Unity.Screenshots
                         try
                         {
                             if (screenshotOperation != null && screenshotOperation.Callback != null)
+                            {
                                 screenshotOperation.Callback(screenshotOperation.FrameNumber, screenshotOperation.Data);
+                            }
                         }
                         catch
                         {
@@ -131,11 +137,12 @@ namespace Unity.Screenshots
                         }
                     }
                 }
+            }
         }
 
         private void ScreenshotCallback(byte[] data, object state)
         {
-            var screenshotOperation = state as ScreenshotOperation;
+            ScreenshotOperation screenshotOperation = state as ScreenshotOperation;
             if (screenshotOperation != null)
             {
                 screenshotOperation.Data = data;
@@ -143,10 +150,9 @@ namespace Unity.Screenshots
             }
         }
 
-        public void TakeScreenshot(object source, int frameNumber, int maximumWidth, int maximumHeight,
-            Action<int, byte[]> callback)
+        public void TakeScreenshot(object source, int frameNumber, int maximumWidth, int maximumHeight, Action<int, byte[]> callback)
         {
-            var screenshotOperation = GetScreenshotOperation();
+            ScreenshotOperation screenshotOperation = this.GetScreenshotOperation();
             screenshotOperation.FrameNumber = frameNumber;
             screenshotOperation.MaximumWidth = maximumWidth;
             screenshotOperation.MaximumHeight = maximumHeight;

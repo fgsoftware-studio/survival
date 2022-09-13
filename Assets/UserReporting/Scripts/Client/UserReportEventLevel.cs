@@ -1,27 +1,27 @@
 ﻿namespace Unity.Cloud.UserReporting
 {
     /// <summary>
-    ///     Represents a user report event level.
+    /// Represents a user report event level.
     /// </summary>
     public enum UserReportEventLevel
     {
         /// <summary>
-        ///     Info.
+        /// Info.
         /// </summary>
         Info = 0,
 
         /// <summary>
-        ///     Success.
+        /// Success.
         /// </summary>
         Success = 1,
 
         /// <summary>
-        ///     Warning.
+        /// Warning.
         /// </summary>
         Warning = 2,
 
         /// <summary>
-        ///     Error.
+        /// Error.
         /// </summary>
         Error = 3
     }

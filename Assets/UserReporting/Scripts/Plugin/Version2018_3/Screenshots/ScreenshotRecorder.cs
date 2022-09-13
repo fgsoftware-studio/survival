@@ -5,33 +5,11 @@ using System.Threading;
 using Unity.Collections;
 using UnityEngine;
 using UnityEngine.Rendering;
-using Object = UnityEngine.Object;
 
 namespace Unity.Screenshots
 {
     public class ScreenshotRecorder
     {
-        #region Static Fields
-
-        private static int nextIdentifier;
-
-        #endregion
-
-        #region Fields
-
-        private readonly List<ScreenshotOperation> operationPool;
-
-        #endregion
-
-        #region Constructors
-
-        public ScreenshotRecorder()
-        {
-            operationPool = new List<ScreenshotOperation>();
-        }
-
-        #endregion
-
         #region Nested Types
 
         private class ScreenshotOperation
@@ -40,17 +18,17 @@ namespace Unity.Screenshots
 
             public ScreenshotOperation()
             {
-                ScreenshotCallbackDelegate = ScreenshotCallback;
-                EncodeCallbackDelegate = EncodeCallback;
+                this.ScreenshotCallbackDelegate = this.ScreenshotCallback;
+                this.EncodeCallbackDelegate = this.EncodeCallback;
             }
 
             #endregion
 
             #region Fields
 
-            public readonly WaitCallback EncodeCallbackDelegate;
+            public WaitCallback EncodeCallbackDelegate;
 
-            public readonly Action<AsyncGPUReadbackRequest> ScreenshotCallbackDelegate;
+            public Action<AsyncGPUReadbackRequest> ScreenshotCallbackDelegate;
 
             #endregion
 
@@ -84,20 +62,28 @@ namespace Unity.Screenshots
 
             private void EncodeCallback(object state)
             {
-                var byteData = NativeData.ToArray();
+                byte[] byteData = this.NativeData.ToArray();
                 int downsampledStride;
-                byteData = Downsampler.Downsample(byteData, Width * 4, MaximumWidth, MaximumHeight,
-                    out downsampledStride);
-                if (Type == ScreenshotType.Png) byteData = PngEncoder.Encode(byteData, downsampledStride);
-                if (Callback != null) Callback(byteData, State);
-                NativeData.Dispose();
-                IsInUse = false;
+                byteData = Downsampler.Downsample(byteData, this.Width * 4, this.MaximumWidth, this.MaximumHeight, out downsampledStride);
+                if (this.Type == ScreenshotType.Png)
+                {
+                    byteData = PngEncoder.Encode(byteData, downsampledStride);
+                }
+                if (this.Callback != null)
+                {
+                    this.Callback(byteData, this.State);
+                }
+                this.NativeData.Dispose();
+                this.IsInUse = false;
             }
 
             private void SavePngToDisk(byte[] byteData)
             {
-                if (!Directory.Exists("Screenshots")) Directory.CreateDirectory("Screenshots");
-                File.WriteAllBytes(string.Format("Screenshots/{0}.png", Identifier % 60), byteData);
+                if (!Directory.Exists("Screenshots"))
+                {
+                    Directory.CreateDirectory("Screenshots");
+                }
+                File.WriteAllBytes(string.Format("Screenshots/{0}.png", this.Identifier % 60), byteData);
             }
 
             private void ScreenshotCallback(AsyncGPUReadbackRequest request)
@@ -105,19 +91,24 @@ namespace Unity.Screenshots
                 if (!request.hasError)
                 {
                     NativeLeakDetection.Mode = NativeLeakDetectionMode.Disabled;
-                    var data = request.GetData<byte>();
-                    var persistentData = new NativeArray<byte>(data, Allocator.Persistent);
-                    Width = request.width;
-                    Height = request.height;
-                    NativeData = persistentData;
-                    ThreadPool.QueueUserWorkItem(EncodeCallbackDelegate, null);
+                    NativeArray<byte> data = request.GetData<byte>();
+                    NativeArray<byte> persistentData = new NativeArray<byte>(data, Allocator.Persistent);
+                    this.Width = request.width;
+                    this.Height = request.height;
+                    this.NativeData = persistentData;
+                    ThreadPool.QueueUserWorkItem(this.EncodeCallbackDelegate, null);
                 }
                 else
                 {
-                    if (Callback != null) Callback(null, State);
+                    if (this.Callback != null)
+                    {
+                        this.Callback(null, this.State);
+                    }
                 }
-
-                if (Source != null) Object.Destroy(Source);
+                if (this.Source != null)
+                {
+                    UnityEngine.Object.Destroy(this.Source);
+                }
             }
 
             #endregion
@@ -125,58 +116,75 @@ namespace Unity.Screenshots
 
         #endregion
 
+        #region Static Fields
+
+        private static int nextIdentifier;
+
+        #endregion
+
+        #region Constructors
+
+        public ScreenshotRecorder()
+        {
+            this.operationPool = new List<ScreenshotOperation>();
+        }
+
+        #endregion
+
+        #region Fields
+
+        private List<ScreenshotOperation> operationPool;
+
+        #endregion
+
         #region Methods
 
         private ScreenshotOperation GetOperation()
         {
-            foreach (var operation in operationPool)
+            foreach (ScreenshotOperation operation in this.operationPool)
+            {
                 if (!operation.IsInUse)
                 {
                     operation.IsInUse = true;
                     return operation;
                 }
-
-            var newOperation = new ScreenshotOperation();
+            }
+            ScreenshotOperation newOperation = new ScreenshotOperation();
             newOperation.IsInUse = true;
-            operationPool.Add(newOperation);
+            this.operationPool.Add(newOperation);
             return newOperation;
         }
 
-        public void Screenshot(int maximumWidth, int maximumHeight, ScreenshotType type,
-            Action<byte[], object> callback, object state)
+        public void Screenshot(int maximumWidth, int maximumHeight, ScreenshotType type, Action<byte[], object> callback, object state)
         {
-            var texture = ScreenCapture.CaptureScreenshotAsTexture();
-            Screenshot(texture, maximumWidth, maximumHeight, type, callback, state);
+            Texture2D texture = ScreenCapture.CaptureScreenshotAsTexture();
+            this.Screenshot(texture, maximumWidth, maximumHeight, type, callback, state);
         }
 
-        public void Screenshot(Camera source, int maximumWidth, int maximumHeight, ScreenshotType type,
-            Action<byte[], object> callback, object state)
+        public void Screenshot(Camera source, int maximumWidth, int maximumHeight, ScreenshotType type, Action<byte[], object> callback, object state)
         {
-            var renderTexture = new RenderTexture(maximumWidth, maximumHeight, 24);
-            var originalTargetTexture = source.targetTexture;
+            RenderTexture renderTexture = new RenderTexture(maximumWidth, maximumHeight, 24);
+            RenderTexture originalTargetTexture = source.targetTexture;
             source.targetTexture = renderTexture;
             source.Render();
             source.targetTexture = originalTargetTexture;
-            Screenshot(renderTexture, maximumWidth, maximumHeight, type, callback, state);
+            this.Screenshot(renderTexture, maximumWidth, maximumHeight, type, callback, state);
         }
 
-        public void Screenshot(RenderTexture source, int maximumWidth, int maximumHeight, ScreenshotType type,
-            Action<byte[], object> callback, object state)
+        public void Screenshot(RenderTexture source, int maximumWidth, int maximumHeight, ScreenshotType type, Action<byte[], object> callback, object state)
         {
-            ScreenshotInternal(source, maximumWidth, maximumHeight, type, callback, state);
+            this.ScreenshotInternal(source, maximumWidth, maximumHeight, type, callback, state);
         }
 
-        public void Screenshot(Texture2D source, int maximumWidth, int maximumHeight, ScreenshotType type,
-            Action<byte[], object> callback, object state)
+        public void Screenshot(Texture2D source, int maximumWidth, int maximumHeight, ScreenshotType type, Action<byte[], object> callback, object state)
         {
-            ScreenshotInternal(source, maximumWidth, maximumHeight, type, callback, state);
+            this.ScreenshotInternal(source, maximumWidth, maximumHeight, type, callback, state);
         }
 
-        private void ScreenshotInternal(Texture source, int maximumWidth, int maximumHeight, ScreenshotType type,
-            Action<byte[], object> callback, object state)
+        private void ScreenshotInternal(Texture source, int maximumWidth, int maximumHeight, ScreenshotType type, Action<byte[], object> callback, object state)
         {
-            var operation = GetOperation();
-            operation.Identifier = nextIdentifier++;
+            ScreenshotOperation operation = this.GetOperation();
+            operation.Identifier = ScreenshotRecorder.nextIdentifier++;
             operation.Source = source;
             operation.MaximumWidth = maximumWidth;
             operation.MaximumHeight = maximumHeight;

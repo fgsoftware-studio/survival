@@ -1,27 +1,27 @@
 ﻿namespace Unity.Cloud.UserReporting
 {
     /// <summary>
-    ///     Represents a user report appearance hint.
+    /// Represents a user report appearance hint.
     /// </summary>
     public enum UserReportAppearanceHint
     {
         /// <summary>
-        ///     Display normally.
+        /// Display normally.
         /// </summary>
         Normal = 0,
 
         /// <summary>
-        ///     Display landscape.
+        /// Display landscape.
         /// </summary>
         Landscape = 1,
 
         /// <summary>
-        ///     Display portrait.
+        /// Display portrait.
         /// </summary>
         Portrait = 2,
 
         /// <summary>
-        ///     Display large.
+        /// Display large.
         /// </summary>
         Large = 3
     }
