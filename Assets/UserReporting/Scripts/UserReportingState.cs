@@ -1,25 +1,25 @@
 ﻿/// <summary>
-///     Represents a user reporting state.
+/// Represents a user reporting state.
 /// </summary>
 public enum UserReportingState
 {
     /// <summary>
-    ///     Idle.
+    /// Idle.
     /// </summary>
     Idle = 0,
 
     /// <summary>
-    ///     Creating bug report.
+    /// Creating bug report.
     /// </summary>
     CreatingUserReport = 1,
 
     /// <summary>
-    ///     Showing form.
+    /// Showing form.
     /// </summary>
     ShowingForm = 2,
 
     /// <summary>
-    ///     Submitting form.
+    /// Submitting form.
     /// </summary>
     SubmittingForm = 3
 }

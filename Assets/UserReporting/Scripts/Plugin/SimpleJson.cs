@@ -62,11 +62,11 @@ using System.Reflection;
 using System.Runtime.Serialization;
 using System.Text;
 using Unity.Cloud.UserReporting.Plugin.SimpleJson.Reflection;
+
 #if !SIMPLE_JSON_NO_LINQ_EXPRESSION
 using System.Linq.Expressions;
 
 #endif
-
 #if SIMPLE_JSON_DYNAMIC
 using System.Dynamic;
 #endif
@@ -126,16 +126,29 @@ namespace Unity.Cloud.UserReporting.Plugin.SimpleJson
             _members = new Dictionary<string, object>(comparer);
         }
 
-        public object this[int index] => GetAtIndex(_members, index);
+        public object this[int index]
+        {
+            get { return JsonObject.GetAtIndex(_members, index); }
+        }
 
         internal static object GetAtIndex(IDictionary<string, object> obj, int index)
         {
-            if (obj == null) throw new ArgumentNullException("obj");
-            if (index >= obj.Count) throw new ArgumentOutOfRangeException("index");
-            var i = 0;
-            foreach (var o in obj)
+            if (obj == null)
+            {
+                throw new ArgumentNullException("obj");
+            }
+            if (index >= obj.Count)
+            {
+                throw new ArgumentOutOfRangeException("index");
+            }
+            int i = 0;
+            foreach (KeyValuePair<string, object> o in obj)
+            {
                 if (i++ == index)
+                {
                     return o.Value;
+                }
+            }
             return null;
         }
 
@@ -149,7 +162,10 @@ namespace Unity.Cloud.UserReporting.Plugin.SimpleJson
             return _members.ContainsKey(key);
         }
 
-        public ICollection<string> Keys => _members.Keys;
+        public ICollection<string> Keys
+        {
+            get { return _members.Keys; }
+        }
 
         public bool Remove(string key)
         {
@@ -161,12 +177,15 @@ namespace Unity.Cloud.UserReporting.Plugin.SimpleJson
             return _members.TryGetValue(key, out value);
         }
 
-        public ICollection<object> Values => _members.Values;
+        public ICollection<object> Values
+        {
+            get { return _members.Values; }
+        }
 
         public object this[string key]
         {
-            get => _members[key];
-            set => _members[key] = value;
+            get { return _members[key]; }
+            set { _members[key] = value; }
         }
 
         public void Add(KeyValuePair<string, object> item)
@@ -181,23 +200,35 @@ namespace Unity.Cloud.UserReporting.Plugin.SimpleJson
 
         public bool Contains(KeyValuePair<string, object> item)
         {
-            return _members.ContainsKey(item.Key) && _members[item.Key] == item.Value;
+            return _members.ContainsKey(item.Key) && this._members[item.Key] == item.Value;
         }
 
         public void CopyTo(KeyValuePair<string, object>[] array, int arrayIndex)
         {
-            if (array == null) throw new ArgumentNullException("array");
-            var num = Count;
-            foreach (var kvp in this)
+            if (array == null)
+            {
+                throw new ArgumentNullException("array");
+            }
+            int num = Count;
+            foreach (KeyValuePair<string, object> kvp in this)
             {
                 array[arrayIndex++] = kvp;
-                if (--num <= 0) return;
+                if (--num <= 0)
+                {
+                    return;
+                }
             }
         }
 
-        public int Count => _members.Count;
+        public int Count
+        {
+            get { return _members.Count; }
+        }
 
-        public bool IsReadOnly => false;
+        public bool IsReadOnly
+        {
+            get { return false; }
+        }
 
         public bool Remove(KeyValuePair<string, object> item)
         {
@@ -335,95 +366,97 @@ namespace Unity.Cloud.UserReporting.Plugin.SimpleJson
 
         private static readonly char[] EscapeTable;
 
-        private static readonly char[] EscapeCharacters = { '"', '\\', '\b', '\f', '\n', '\r', '\t' };
+        private static readonly char[] EscapeCharacters = new char[] {'"', '\\', '\b', '\f', '\n', '\r', '\t'};
 
         static SimpleJson()
         {
-            EscapeTable = new char[93];
-            EscapeTable['"'] = '"';
-            EscapeTable['\\'] = '\\';
-            EscapeTable['\b'] = 'b';
-            EscapeTable['\f'] = 'f';
-            EscapeTable['\n'] = 'n';
-            EscapeTable['\r'] = 'r';
-            EscapeTable['\t'] = 't';
+            SimpleJson.EscapeTable = new char[93];
+            SimpleJson.EscapeTable['"'] = '"';
+            SimpleJson.EscapeTable['\\'] = '\\';
+            SimpleJson.EscapeTable['\b'] = 'b';
+            SimpleJson.EscapeTable['\f'] = 'f';
+            SimpleJson.EscapeTable['\n'] = 'n';
+            SimpleJson.EscapeTable['\r'] = 'r';
+            SimpleJson.EscapeTable['\t'] = 't';
         }
 
         public static object DeserializeObject(string json)
         {
             object obj;
-            if (TryDeserializeObject(json, out obj)) return obj;
+            if (SimpleJson.TryDeserializeObject(json, out obj))
+            {
+                return obj;
+            }
             throw new SerializationException("Invalid JSON string");
         }
 
-        [SuppressMessage("Microsoft.Design", "CA1007:UseGenericsWhereAppropriate",
-            Justification = "Need to support .NET 2")]
+        [SuppressMessage("Microsoft.Design", "CA1007:UseGenericsWhereAppropriate", Justification = "Need to support .NET 2")]
         public static bool TryDeserializeObject(string json, out object obj)
         {
-            var success = true;
+            bool success = true;
             if (json != null)
             {
-                var charArray = json.ToCharArray();
-                var index = 0;
-                obj = ParseValue(charArray, ref index, ref success);
+                char[] charArray = json.ToCharArray();
+                int index = 0;
+                obj = SimpleJson.ParseValue(charArray, ref index, ref success);
             }
             else
             {
                 obj = null;
             }
-
             return success;
         }
 
         public static object DeserializeObject(string json, Type type, IJsonSerializerStrategy jsonSerializerStrategy)
         {
-            var jsonObject = DeserializeObject(json);
-            return type == null || (jsonObject != null && ReflectionUtils.IsAssignableFrom(jsonObject.GetType(), type))
-                ? jsonObject
-                : (jsonSerializerStrategy ?? CurrentJsonSerializerStrategy).DeserializeObject(jsonObject, type);
+            object jsonObject = SimpleJson.DeserializeObject(json);
+            return type == null || jsonObject != null && ReflectionUtils.IsAssignableFrom(jsonObject.GetType(), type) ? jsonObject : (jsonSerializerStrategy ?? SimpleJson.CurrentJsonSerializerStrategy).DeserializeObject(jsonObject, type);
         }
 
         public static object DeserializeObject(string json, Type type)
         {
-            return DeserializeObject(json, type, null);
+            return SimpleJson.DeserializeObject(json, type, null);
         }
 
         public static T DeserializeObject<T>(string json, IJsonSerializerStrategy jsonSerializerStrategy)
         {
-            return (T)DeserializeObject(json, typeof(T), jsonSerializerStrategy);
+            return (T) SimpleJson.DeserializeObject(json, typeof(T), jsonSerializerStrategy);
         }
 
         public static T DeserializeObject<T>(string json)
         {
-            return (T)DeserializeObject(json, typeof(T), null);
+            return (T) SimpleJson.DeserializeObject(json, typeof(T), null);
         }
 
         public static string SerializeObject(object json, IJsonSerializerStrategy jsonSerializerStrategy)
         {
-            var builder = new StringBuilder(BUILDER_CAPACITY);
-            var success = SerializeValue(jsonSerializerStrategy, json, builder);
+            StringBuilder builder = new StringBuilder(SimpleJson.BUILDER_CAPACITY);
+            bool success = SimpleJson.SerializeValue(jsonSerializerStrategy, json, builder);
             return success ? builder.ToString() : null;
         }
 
         public static string SerializeObject(object json)
         {
-            return SerializeObject(json, CurrentJsonSerializerStrategy);
+            return SimpleJson.SerializeObject(json, SimpleJson.CurrentJsonSerializerStrategy);
         }
 
         public static string EscapeToJavascriptString(string jsonString)
         {
-            if (string.IsNullOrEmpty(jsonString)) return jsonString;
-            var sb = new StringBuilder();
+            if (string.IsNullOrEmpty(jsonString))
+            {
+                return jsonString;
+            }
+            StringBuilder sb = new StringBuilder();
             char c;
-            for (var i = 0; i < jsonString.Length;)
+            for (int i = 0; i < jsonString.Length;)
             {
                 c = jsonString[i++];
                 if (c == '\\')
                 {
-                    var remainingLength = jsonString.Length - i;
+                    int remainingLength = jsonString.Length - i;
                     if (remainingLength >= 2)
                     {
-                        var lookahead = jsonString[i];
+                        char lookahead = jsonString[i];
                         if (lookahead == '\\')
                         {
                             sb.Append('\\');
@@ -461,7 +494,6 @@ namespace Unity.Cloud.UserReporting.Plugin.SimpleJson
                     sb.Append(c);
                 }
             }
-
             return sb.ToString();
         }
 
@@ -471,30 +503,29 @@ namespace Unity.Cloud.UserReporting.Plugin.SimpleJson
             int token;
 
             // {
-            NextToken(json, ref index);
-            var done = false;
+            SimpleJson.NextToken(json, ref index);
+            bool done = false;
             while (!done)
             {
-                token = LookAhead(json, index);
-                if (token == TOKEN_NONE)
+                token = SimpleJson.LookAhead(json, index);
+                if (token == SimpleJson.TOKEN_NONE)
                 {
                     success = false;
                     return null;
                 }
-
-                if (token == TOKEN_COMMA)
+                else if (token == SimpleJson.TOKEN_COMMA)
                 {
-                    NextToken(json, ref index);
+                    SimpleJson.NextToken(json, ref index);
                 }
-                else if (token == TOKEN_CURLY_CLOSE)
+                else if (token == SimpleJson.TOKEN_CURLY_CLOSE)
                 {
-                    NextToken(json, ref index);
+                    SimpleJson.NextToken(json, ref index);
                     return table;
                 }
                 else
                 {
                     // name
-                    var name = ParseString(json, ref index, ref success);
+                    string name = SimpleJson.ParseString(json, ref index, ref success);
                     if (!success)
                     {
                         success = false;
@@ -502,110 +533,113 @@ namespace Unity.Cloud.UserReporting.Plugin.SimpleJson
                     }
 
                     // :
-                    token = NextToken(json, ref index);
-                    if (token != TOKEN_COLON)
+                    token = SimpleJson.NextToken(json, ref index);
+                    if (token != SimpleJson.TOKEN_COLON)
                     {
                         success = false;
                         return null;
                     }
 
                     // value
-                    var value = ParseValue(json, ref index, ref success);
+                    object value = SimpleJson.ParseValue(json, ref index, ref success);
                     if (!success)
                     {
                         success = false;
                         return null;
                     }
-
                     table[name] = value;
                 }
             }
-
             return table;
         }
 
         private static JsonArray ParseArray(char[] json, ref int index, ref bool success)
         {
-            var array = new JsonArray();
+            JsonArray array = new JsonArray();
 
             // [
-            NextToken(json, ref index);
-            var done = false;
+            SimpleJson.NextToken(json, ref index);
+            bool done = false;
             while (!done)
             {
-                var token = LookAhead(json, index);
-                if (token == TOKEN_NONE)
+                int token = SimpleJson.LookAhead(json, index);
+                if (token == SimpleJson.TOKEN_NONE)
                 {
                     success = false;
                     return null;
                 }
-
-                if (token == TOKEN_COMMA)
+                else if (token == SimpleJson.TOKEN_COMMA)
                 {
-                    NextToken(json, ref index);
+                    SimpleJson.NextToken(json, ref index);
                 }
-                else if (token == TOKEN_SQUARED_CLOSE)
+                else if (token == SimpleJson.TOKEN_SQUARED_CLOSE)
                 {
-                    NextToken(json, ref index);
+                    SimpleJson.NextToken(json, ref index);
                     break;
                 }
                 else
                 {
-                    var value = ParseValue(json, ref index, ref success);
-                    if (!success) return null;
+                    object value = SimpleJson.ParseValue(json, ref index, ref success);
+                    if (!success)
+                    {
+                        return null;
+                    }
                     array.Add(value);
                 }
             }
-
             return array;
         }
 
         private static object ParseValue(char[] json, ref int index, ref bool success)
         {
-            switch (LookAhead(json, index))
+            switch (SimpleJson.LookAhead(json, index))
             {
-                case TOKEN_STRING: return ParseString(json, ref index, ref success);
-                case TOKEN_NUMBER: return ParseNumber(json, ref index, ref success);
-                case TOKEN_CURLY_OPEN: return ParseObject(json, ref index, ref success);
-                case TOKEN_SQUARED_OPEN: return ParseArray(json, ref index, ref success);
-                case TOKEN_TRUE:
-                    NextToken(json, ref index);
+                case SimpleJson.TOKEN_STRING: return SimpleJson.ParseString(json, ref index, ref success);
+                case SimpleJson.TOKEN_NUMBER: return SimpleJson.ParseNumber(json, ref index, ref success);
+                case SimpleJson.TOKEN_CURLY_OPEN: return SimpleJson.ParseObject(json, ref index, ref success);
+                case SimpleJson.TOKEN_SQUARED_OPEN: return SimpleJson.ParseArray(json, ref index, ref success);
+                case SimpleJson.TOKEN_TRUE:
+                    SimpleJson.NextToken(json, ref index);
                     return true;
-                case TOKEN_FALSE:
-                    NextToken(json, ref index);
+                case SimpleJson.TOKEN_FALSE:
+                    SimpleJson.NextToken(json, ref index);
                     return false;
-                case TOKEN_NULL:
-                    NextToken(json, ref index);
+                case SimpleJson.TOKEN_NULL:
+                    SimpleJson.NextToken(json, ref index);
                     return null;
-                case TOKEN_NONE: break;
+                case SimpleJson.TOKEN_NONE: break;
             }
-
             success = false;
             return null;
         }
 
         private static string ParseString(char[] json, ref int index, ref bool success)
         {
-            var s = new StringBuilder(BUILDER_CAPACITY);
+            StringBuilder s = new StringBuilder(SimpleJson.BUILDER_CAPACITY);
             char c;
-            EatWhitespace(json, ref index);
+            SimpleJson.EatWhitespace(json, ref index);
 
             // "
             c = json[index++];
-            var complete = false;
+            bool complete = false;
             while (!complete)
             {
-                if (index == json.Length) break;
+                if (index == json.Length)
+                {
+                    break;
+                }
                 c = json[index++];
                 if (c == '"')
                 {
                     complete = true;
                     break;
                 }
-
-                if (c == '\\')
+                else if (c == '\\')
                 {
-                    if (index == json.Length) break;
+                    if (index == json.Length)
+                    {
+                        break;
+                    }
                     c = json[index++];
                     if (c == '"')
                     {
@@ -641,13 +675,15 @@ namespace Unity.Cloud.UserReporting.Plugin.SimpleJson
                     }
                     else if (c == 'u')
                     {
-                        var remainingLength = json.Length - index;
+                        int remainingLength = json.Length - index;
                         if (remainingLength >= 4)
                         {
                             // parse the 32 bit hex into an integer codepoint
                             uint codePoint;
-                            if (!(success = uint.TryParse(new string(json, index, 4), NumberStyles.HexNumber,
-                                    CultureInfo.InvariantCulture, out codePoint))) return "";
+                            if (!(success = UInt32.TryParse(new string(json, index, 4), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out codePoint)))
+                            {
+                                return "";
+                            }
 
                             // convert the integer codepoint to a unicode char and add to string
                             if (0xD800 <= codePoint && codePoint <= 0xDBFF) // if high surrogate
@@ -657,23 +693,21 @@ namespace Unity.Cloud.UserReporting.Plugin.SimpleJson
                                 if (remainingLength >= 6)
                                 {
                                     uint lowCodePoint;
-                                    if (new string(json, index, 2) == "\\u" && uint.TryParse(
-                                            new string(json, index + 2, 4), NumberStyles.HexNumber,
-                                            CultureInfo.InvariantCulture, out lowCodePoint))
+                                    if (new string(json, index, 2) == "\\u" && UInt32.TryParse(new string(json, index + 2, 4), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out lowCodePoint))
+                                    {
                                         if (0xDC00 <= lowCodePoint && lowCodePoint <= 0xDFFF) // if low surrogate
                                         {
-                                            s.Append((char)codePoint);
-                                            s.Append((char)lowCodePoint);
+                                            s.Append((char) codePoint);
+                                            s.Append((char) lowCodePoint);
                                             index += 6; // skip 6 chars
                                             continue;
                                         }
+                                    }
                                 }
-
                                 success = false; // invalid surrogate pair
                                 return "";
                             }
-
-                            s.Append(ConvertFromUtf32((int)codePoint));
+                            s.Append(SimpleJson.ConvertFromUtf32((int) codePoint));
 
                             // skip 4 chars
                             index += 4;
@@ -689,13 +723,11 @@ namespace Unity.Cloud.UserReporting.Plugin.SimpleJson
                     s.Append(c);
                 }
             }
-
             if (!complete)
             {
                 success = false;
                 return null;
             }
-
             return s.ToString();
         }
 
@@ -703,37 +735,40 @@ namespace Unity.Cloud.UserReporting.Plugin.SimpleJson
         {
             // http://www.java2s.com/Open-Source/CSharp/2.6.4-mono-.net-core/System/System/Char.cs.htm
             if (utf32 < 0 || utf32 > 0x10FFFF)
+            {
                 throw new ArgumentOutOfRangeException("utf32", "The argument must be from 0 to 0x10FFFF.");
+            }
             if (0xD800 <= utf32 && utf32 <= 0xDFFF)
+            {
                 throw new ArgumentOutOfRangeException("utf32", "The argument must not be in surrogate pair range.");
-            if (utf32 < 0x10000) return new string((char)utf32, 1);
+            }
+            if (utf32 < 0x10000)
+            {
+                return new string((char) utf32, 1);
+            }
             utf32 -= 0x10000;
-            return new string(new char[] { (char)((utf32 >> 10) + 0xD800), (char)(utf32 % 0x0400 + 0xDC00) });
+            return new string(new char[] {(char) ((utf32 >> 10) + 0xD800), (char) (utf32 % 0x0400 + 0xDC00)});
         }
 
         private static object ParseNumber(char[] json, ref int index, ref bool success)
         {
-            EatWhitespace(json, ref index);
-            var lastIndex = GetLastIndexOfNumber(json, index);
-            var charLength = lastIndex - index + 1;
+            SimpleJson.EatWhitespace(json, ref index);
+            int lastIndex = SimpleJson.GetLastIndexOfNumber(json, index);
+            int charLength = lastIndex - index + 1;
             object returnNumber;
-            var str = new string(json, index, charLength);
-            if (str.IndexOf(".", StringComparison.OrdinalIgnoreCase) != -1 ||
-                str.IndexOf("e", StringComparison.OrdinalIgnoreCase) != -1)
+            string str = new string(json, index, charLength);
+            if (str.IndexOf(".", StringComparison.OrdinalIgnoreCase) != -1 || str.IndexOf("e", StringComparison.OrdinalIgnoreCase) != -1)
             {
                 double number;
-                success = double.TryParse(new string(json, index, charLength), NumberStyles.Any,
-                    CultureInfo.InvariantCulture, out number);
+                success = double.TryParse(new string(json, index, charLength), NumberStyles.Any, CultureInfo.InvariantCulture, out number);
                 returnNumber = number;
             }
             else
             {
                 long number;
-                success = long.TryParse(new string(json, index, charLength), NumberStyles.Any,
-                    CultureInfo.InvariantCulture, out number);
+                success = long.TryParse(new string(json, index, charLength), NumberStyles.Any, CultureInfo.InvariantCulture, out number);
                 returnNumber = number;
             }
-
             index = lastIndex + 1;
             return returnNumber;
         }
@@ -742,39 +777,50 @@ namespace Unity.Cloud.UserReporting.Plugin.SimpleJson
         {
             int lastIndex;
             for (lastIndex = index; lastIndex < json.Length; lastIndex++)
+            {
                 if ("0123456789+-.eE".IndexOf(json[lastIndex]) == -1)
+                {
                     break;
+                }
+            }
             return lastIndex - 1;
         }
 
         private static void EatWhitespace(char[] json, ref int index)
         {
             for (; index < json.Length; index++)
+            {
                 if (" \t\n\r\b\f".IndexOf(json[index]) == -1)
+                {
                     break;
+                }
+            }
         }
 
         private static int LookAhead(char[] json, int index)
         {
-            var saveIndex = index;
-            return NextToken(json, ref saveIndex);
+            int saveIndex = index;
+            return SimpleJson.NextToken(json, ref saveIndex);
         }
 
         [SuppressMessage("Microsoft.Maintainability", "CA1502:AvoidExcessiveComplexity")]
         private static int NextToken(char[] json, ref int index)
         {
-            EatWhitespace(json, ref index);
-            if (index == json.Length) return TOKEN_NONE;
-            var c = json[index];
+            SimpleJson.EatWhitespace(json, ref index);
+            if (index == json.Length)
+            {
+                return SimpleJson.TOKEN_NONE;
+            }
+            char c = json[index];
             index++;
             switch (c)
             {
-                case '{': return TOKEN_CURLY_OPEN;
-                case '}': return TOKEN_CURLY_CLOSE;
-                case '[': return TOKEN_SQUARED_OPEN;
-                case ']': return TOKEN_SQUARED_CLOSE;
-                case ',': return TOKEN_COMMA;
-                case '"': return TOKEN_STRING;
+                case '{': return SimpleJson.TOKEN_CURLY_OPEN;
+                case '}': return SimpleJson.TOKEN_CURLY_CLOSE;
+                case '[': return SimpleJson.TOKEN_SQUARED_OPEN;
+                case ']': return SimpleJson.TOKEN_SQUARED_CLOSE;
+                case ',': return SimpleJson.TOKEN_COMMA;
+                case '"': return SimpleJson.TOKEN_STRING;
                 case '0':
                 case '1':
                 case '2':
@@ -785,79 +831,80 @@ namespace Unity.Cloud.UserReporting.Plugin.SimpleJson
                 case '7':
                 case '8':
                 case '9':
-                case '-': return TOKEN_NUMBER;
-                case ':': return TOKEN_COLON;
+                case '-': return SimpleJson.TOKEN_NUMBER;
+                case ':': return SimpleJson.TOKEN_COLON;
             }
-
             index--;
-            var remainingLength = json.Length - index;
+            int remainingLength = json.Length - index;
 
             // false
             if (remainingLength >= 5)
-                if (json[index] == 'f' && json[index + 1] == 'a' && json[index + 2] == 'l' && json[index + 3] == 's' &&
-                    json[index + 4] == 'e')
+            {
+                if (json[index] == 'f' && json[index + 1] == 'a' && json[index + 2] == 'l' && json[index + 3] == 's' && json[index + 4] == 'e')
                 {
                     index += 5;
-                    return TOKEN_FALSE;
+                    return SimpleJson.TOKEN_FALSE;
                 }
+            }
 
             // true
             if (remainingLength >= 4)
+            {
                 if (json[index] == 't' && json[index + 1] == 'r' && json[index + 2] == 'u' && json[index + 3] == 'e')
                 {
                     index += 4;
-                    return TOKEN_TRUE;
+                    return SimpleJson.TOKEN_TRUE;
                 }
+            }
 
             // null
             if (remainingLength >= 4)
+            {
                 if (json[index] == 'n' && json[index + 1] == 'u' && json[index + 2] == 'l' && json[index + 3] == 'l')
                 {
                     index += 4;
-                    return TOKEN_NULL;
+                    return SimpleJson.TOKEN_NULL;
                 }
-
-            return TOKEN_NONE;
+            }
+            return SimpleJson.TOKEN_NONE;
         }
 
-        private static bool SerializeValue(IJsonSerializerStrategy jsonSerializerStrategy, object value,
-            StringBuilder builder)
+        private static bool SerializeValue(IJsonSerializerStrategy jsonSerializerStrategy, object value, StringBuilder builder)
         {
-            var success = true;
-            var stringValue = value as string;
+            bool success = true;
+            string stringValue = value as string;
             if (stringValue != null)
             {
-                success = SerializeString(stringValue, builder);
+                success = SimpleJson.SerializeString(stringValue, builder);
             }
             else
             {
-                var dict = value as IDictionary<string, object>;
+                IDictionary<string, object> dict = value as IDictionary<string, object>;
                 if (dict != null)
                 {
-                    success = SerializeObject(jsonSerializerStrategy, dict.Keys, dict.Values, builder);
+                    success = SimpleJson.SerializeObject(jsonSerializerStrategy, dict.Keys, dict.Values, builder);
                 }
                 else
                 {
-                    var stringDictionary = value as IDictionary<string, string>;
+                    IDictionary<string, string> stringDictionary = value as IDictionary<string, string>;
                     if (stringDictionary != null)
                     {
-                        success = SerializeObject(jsonSerializerStrategy, stringDictionary.Keys,
-                            stringDictionary.Values, builder);
+                        success = SimpleJson.SerializeObject(jsonSerializerStrategy, stringDictionary.Keys, stringDictionary.Values, builder);
                     }
                     else
                     {
-                        var enumerableValue = value as IEnumerable;
+                        IEnumerable enumerableValue = value as IEnumerable;
                         if (enumerableValue != null)
                         {
-                            success = SerializeArray(jsonSerializerStrategy, enumerableValue, builder);
+                            success = SimpleJson.SerializeArray(jsonSerializerStrategy, enumerableValue, builder);
                         }
-                        else if (IsNumeric(value))
+                        else if (SimpleJson.IsNumeric(value))
                         {
-                            success = SerializeNumber(value, builder);
+                            success = SimpleJson.SerializeNumber(value, builder);
                         }
                         else if (value is bool)
                         {
-                            builder.Append((bool)value ? "true" : "false");
+                            builder.Append((bool) value ? "true" : "false");
                         }
                         else if (value == null)
                         {
@@ -866,54 +913,68 @@ namespace Unity.Cloud.UserReporting.Plugin.SimpleJson
                         else
                         {
                             object serializedObject;
-                            success = jsonSerializerStrategy.TrySerializeNonPrimitiveObject(value,
-                                out serializedObject);
-                            if (success) SerializeValue(jsonSerializerStrategy, serializedObject, builder);
+                            success = jsonSerializerStrategy.TrySerializeNonPrimitiveObject(value, out serializedObject);
+                            if (success)
+                            {
+                                SimpleJson.SerializeValue(jsonSerializerStrategy, serializedObject, builder);
+                            }
                         }
                     }
                 }
             }
-
             return success;
         }
 
-        private static bool SerializeObject(IJsonSerializerStrategy jsonSerializerStrategy, IEnumerable keys,
-            IEnumerable values, StringBuilder builder)
+        private static bool SerializeObject(IJsonSerializerStrategy jsonSerializerStrategy, IEnumerable keys, IEnumerable values, StringBuilder builder)
         {
             builder.Append("{");
-            var ke = keys.GetEnumerator();
-            var ve = values.GetEnumerator();
-            var first = true;
+            IEnumerator ke = keys.GetEnumerator();
+            IEnumerator ve = values.GetEnumerator();
+            bool first = true;
             while (ke.MoveNext() && ve.MoveNext())
             {
-                var key = ke.Current;
-                var value = ve.Current;
-                if (!first) builder.Append(",");
-                var stringKey = key as string;
+                object key = ke.Current;
+                object value = ve.Current;
+                if (!first)
+                {
+                    builder.Append(",");
+                }
+                string stringKey = key as string;
                 if (stringKey != null)
-                    SerializeString(stringKey, builder);
-                else if (!SerializeValue(jsonSerializerStrategy, value, builder)) return false;
+                {
+                    SimpleJson.SerializeString(stringKey, builder);
+                }
+                else if (!SimpleJson.SerializeValue(jsonSerializerStrategy, value, builder))
+                {
+                    return false;
+                }
                 builder.Append(":");
-                if (!SerializeValue(jsonSerializerStrategy, value, builder)) return false;
+                if (!SimpleJson.SerializeValue(jsonSerializerStrategy, value, builder))
+                {
+                    return false;
+                }
                 first = false;
             }
-
             builder.Append("}");
             return true;
         }
 
-        private static bool SerializeArray(IJsonSerializerStrategy jsonSerializerStrategy, IEnumerable anArray,
-            StringBuilder builder)
+        private static bool SerializeArray(IJsonSerializerStrategy jsonSerializerStrategy, IEnumerable anArray, StringBuilder builder)
         {
             builder.Append("[");
-            var first = true;
-            foreach (var value in anArray)
+            bool first = true;
+            foreach (object value in anArray)
             {
-                if (!first) builder.Append(",");
-                if (!SerializeValue(jsonSerializerStrategy, value, builder)) return false;
+                if (!first)
+                {
+                    builder.Append(",");
+                }
+                if (!SimpleJson.SerializeValue(jsonSerializerStrategy, value, builder))
+                {
+                    return false;
+                }
                 first = false;
             }
-
             builder.Append("]");
             return true;
         }
@@ -921,25 +982,24 @@ namespace Unity.Cloud.UserReporting.Plugin.SimpleJson
         private static bool SerializeString(string aString, StringBuilder builder)
         {
             // Happy path if there's nothing to be escaped. IndexOfAny is highly optimized (and unmanaged)
-            if (aString.IndexOfAny(EscapeCharacters) == -1)
+            if (aString.IndexOfAny(SimpleJson.EscapeCharacters) == -1)
             {
                 builder.Append('"');
                 builder.Append(aString);
                 builder.Append('"');
                 return true;
             }
-
             builder.Append('"');
-            var safeCharacterCount = 0;
-            var charArray = aString.ToCharArray();
-            for (var i = 0; i < charArray.Length; i++)
+            int safeCharacterCount = 0;
+            char[] charArray = aString.ToCharArray();
+            for (int i = 0; i < charArray.Length; i++)
             {
-                var c = charArray[i];
+                char c = charArray[i];
 
                 // Non ascii characters are fine, buffer them up and send them to the builder
                 // in larger chunks if possible. The escape table is a 1:1 translation table
                 // with \0 [default(char)] denoting a safe character.
-                if (c >= EscapeTable.Length || EscapeTable[c] == default(char))
+                if (c >= SimpleJson.EscapeTable.Length || SimpleJson.EscapeTable[c] == default(char))
                 {
                     safeCharacterCount++;
                 }
@@ -950,14 +1010,14 @@ namespace Unity.Cloud.UserReporting.Plugin.SimpleJson
                         builder.Append(charArray, i - safeCharacterCount, safeCharacterCount);
                         safeCharacterCount = 0;
                     }
-
                     builder.Append('\\');
-                    builder.Append(EscapeTable[c]);
+                    builder.Append(SimpleJson.EscapeTable[c]);
                 }
             }
-
             if (safeCharacterCount > 0)
+            {
                 builder.Append(charArray, charArray.Length - safeCharacterCount, safeCharacterCount);
+            }
             builder.Append('"');
             return true;
         }
@@ -965,36 +1025,83 @@ namespace Unity.Cloud.UserReporting.Plugin.SimpleJson
         private static bool SerializeNumber(object number, StringBuilder builder)
         {
             if (number is long)
-                builder.Append(((long)number).ToString(CultureInfo.InvariantCulture));
+            {
+                builder.Append(((long) number).ToString(CultureInfo.InvariantCulture));
+            }
             else if (number is ulong)
-                builder.Append(((ulong)number).ToString(CultureInfo.InvariantCulture));
+            {
+                builder.Append(((ulong) number).ToString(CultureInfo.InvariantCulture));
+            }
             else if (number is int)
-                builder.Append(((int)number).ToString(CultureInfo.InvariantCulture));
+            {
+                builder.Append(((int) number).ToString(CultureInfo.InvariantCulture));
+            }
             else if (number is uint)
-                builder.Append(((uint)number).ToString(CultureInfo.InvariantCulture));
+            {
+                builder.Append(((uint) number).ToString(CultureInfo.InvariantCulture));
+            }
             else if (number is decimal)
-                builder.Append(((decimal)number).ToString(CultureInfo.InvariantCulture));
+            {
+                builder.Append(((decimal) number).ToString(CultureInfo.InvariantCulture));
+            }
             else if (number is float)
-                builder.Append(((float)number).ToString(CultureInfo.InvariantCulture));
+            {
+                builder.Append(((float) number).ToString(CultureInfo.InvariantCulture));
+            }
             else
+            {
                 builder.Append(Convert.ToDouble(number, CultureInfo.InvariantCulture)
                     .ToString("r", CultureInfo.InvariantCulture));
+            }
             return true;
         }
 
         private static bool IsNumeric(object value)
         {
-            if (value is sbyte) return true;
-            if (value is byte) return true;
-            if (value is short) return true;
-            if (value is ushort) return true;
-            if (value is int) return true;
-            if (value is uint) return true;
-            if (value is long) return true;
-            if (value is ulong) return true;
-            if (value is float) return true;
-            if (value is double) return true;
-            if (value is decimal) return true;
+            if (value is sbyte)
+            {
+                return true;
+            }
+            if (value is byte)
+            {
+                return true;
+            }
+            if (value is short)
+            {
+                return true;
+            }
+            if (value is ushort)
+            {
+                return true;
+            }
+            if (value is int)
+            {
+                return true;
+            }
+            if (value is uint)
+            {
+                return true;
+            }
+            if (value is long)
+            {
+                return true;
+            }
+            if (value is ulong)
+            {
+                return true;
+            }
+            if (value is float)
+            {
+                return true;
+            }
+            if (value is double)
+            {
+                return true;
+            }
+            if (value is decimal)
+            {
+                return true;
+            }
             return false;
         }
 
@@ -1004,23 +1111,24 @@ namespace Unity.Cloud.UserReporting.Plugin.SimpleJson
         {
             get
             {
-                return _currentJsonSerializerStrategy ?? (_currentJsonSerializerStrategy =
+                return SimpleJson._currentJsonSerializerStrategy ?? (SimpleJson._currentJsonSerializerStrategy =
 #if SIMPLE_JSON_DATACONTRACT
  DataContractJsonSerializerStrategy
 #else
-                            PocoJsonSerializerStrategy
+                               SimpleJson.PocoJsonSerializerStrategy
 #endif
-                    );
+                       );
             }
-            set { _currentJsonSerializerStrategy = value; }
+            set { SimpleJson._currentJsonSerializerStrategy = value; }
         }
 
         private static PocoJsonSerializerStrategy _pocoJsonSerializerStrategy;
 
         [EditorBrowsable(EditorBrowsableState.Advanced)]
-        public static PocoJsonSerializerStrategy PocoJsonSerializerStrategy => _pocoJsonSerializerStrategy ??
-                                                                               (_pocoJsonSerializerStrategy =
-                                                                                   new PocoJsonSerializerStrategy());
+        public static PocoJsonSerializerStrategy PocoJsonSerializerStrategy
+        {
+            get { return SimpleJson._pocoJsonSerializerStrategy ?? (SimpleJson._pocoJsonSerializerStrategy = new PocoJsonSerializerStrategy()); }
+        }
 
 #if SIMPLE_JSON_DATACONTRACT
         private static DataContractJsonSerializerStrategy _dataContractJsonSerializerStrategy;
@@ -1029,8 +1137,7 @@ namespace Unity.Cloud.UserReporting.Plugin.SimpleJson
         {
             get
             {
-                return _dataContractJsonSerializerStrategy ?? (_dataContractJsonSerializerStrategy =
- new DataContractJsonSerializerStrategy());
+                return _dataContractJsonSerializerStrategy ?? (_dataContractJsonSerializerStrategy = new DataContractJsonSerializerStrategy());
             }
         }
 
@@ -1045,8 +1152,7 @@ namespace Unity.Cloud.UserReporting.Plugin.SimpleJson
 #endif
         interface IJsonSerializerStrategy
     {
-        [SuppressMessage("Microsoft.Design", "CA1007:UseGenericsWhereAppropriate",
-            Justification = "Need to support .NET 2")]
+        [SuppressMessage("Microsoft.Design", "CA1007:UseGenericsWhereAppropriate", Justification = "Need to support .NET 2")]
         bool TrySerializeNonPrimitiveObject(object input, out object output);
 
         object DeserializeObject(object value, Type type);
@@ -1068,22 +1174,15 @@ namespace Unity.Cloud.UserReporting.Plugin.SimpleJson
 
         internal static readonly Type[] EmptyTypes = new Type[0];
 
-        internal static readonly Type[] ArrayConstructorParameterTypes = { typeof(int) };
+        internal static readonly Type[] ArrayConstructorParameterTypes = new Type[] {typeof(int)};
 
-        private static readonly string[] Iso8601Format =
-            { @"yyyy-MM-dd\THH:mm:ss.FFFFFFF\Z", @"yyyy-MM-dd\THH:mm:ss\Z", @"yyyy-MM-dd\THH:mm:ssK" };
+        private static readonly string[] Iso8601Format = new string[] {@"yyyy-MM-dd\THH:mm:ss.FFFFFFF\Z", @"yyyy-MM-dd\THH:mm:ss\Z", @"yyyy-MM-dd\THH:mm:ssK"};
 
         public PocoJsonSerializerStrategy()
         {
-            ConstructorCache =
-                new ReflectionUtils.ThreadSafeDictionary<Type, ReflectionUtils.ConstructorDelegate>(
-                    ContructorDelegateFactory);
-            GetCache =
-                new ReflectionUtils.ThreadSafeDictionary<Type, IDictionary<string, ReflectionUtils.GetDelegate>>(
-                    GetterValueFactory);
-            SetCache =
-                new ReflectionUtils.ThreadSafeDictionary<Type,
-                    IDictionary<string, KeyValuePair<Type, ReflectionUtils.SetDelegate>>>(SetterValueFactory);
+            ConstructorCache = new ReflectionUtils.ThreadSafeDictionary<Type, ReflectionUtils.ConstructorDelegate>(ContructorDelegateFactory);
+            GetCache = new ReflectionUtils.ThreadSafeDictionary<Type, IDictionary<string, ReflectionUtils.GetDelegate>>(GetterValueFactory);
+            SetCache = new ReflectionUtils.ThreadSafeDictionary<Type, IDictionary<string, KeyValuePair<Type, ReflectionUtils.SetDelegate>>>(SetterValueFactory);
         }
 
         protected virtual string MapClrMemberNameToJsonFieldName(string clrPropertyName)
@@ -1093,54 +1192,58 @@ namespace Unity.Cloud.UserReporting.Plugin.SimpleJson
 
         internal virtual ReflectionUtils.ConstructorDelegate ContructorDelegateFactory(Type key)
         {
-            return ReflectionUtils.GetContructor(key, key.IsArray ? ArrayConstructorParameterTypes : EmptyTypes);
+            return ReflectionUtils.GetContructor(key, key.IsArray ? PocoJsonSerializerStrategy.ArrayConstructorParameterTypes : PocoJsonSerializerStrategy.EmptyTypes);
         }
 
         internal virtual IDictionary<string, ReflectionUtils.GetDelegate> GetterValueFactory(Type type)
         {
-            IDictionary<string, ReflectionUtils.GetDelegate> result =
-                new Dictionary<string, ReflectionUtils.GetDelegate>();
-            foreach (var propertyInfo in ReflectionUtils.GetProperties(type))
+            IDictionary<string, ReflectionUtils.GetDelegate> result = new Dictionary<string, ReflectionUtils.GetDelegate>();
+            foreach (PropertyInfo propertyInfo in ReflectionUtils.GetProperties(type))
+            {
                 if (propertyInfo.CanRead)
                 {
-                    var getMethod = ReflectionUtils.GetGetterMethodInfo(propertyInfo);
-                    if (getMethod.IsStatic || !getMethod.IsPublic) continue;
-                    result[MapClrMemberNameToJsonFieldName(propertyInfo.Name)] =
-                        ReflectionUtils.GetGetMethod(propertyInfo);
+                    MethodInfo getMethod = ReflectionUtils.GetGetterMethodInfo(propertyInfo);
+                    if (getMethod.IsStatic || !getMethod.IsPublic)
+                    {
+                        continue;
+                    }
+                    result[MapClrMemberNameToJsonFieldName(propertyInfo.Name)] = ReflectionUtils.GetGetMethod(propertyInfo);
                 }
-
-            foreach (var fieldInfo in ReflectionUtils.GetFields(type))
+            }
+            foreach (FieldInfo fieldInfo in ReflectionUtils.GetFields(type))
             {
-                if (fieldInfo.IsStatic || !fieldInfo.IsPublic) continue;
+                if (fieldInfo.IsStatic || !fieldInfo.IsPublic)
+                {
+                    continue;
+                }
                 result[MapClrMemberNameToJsonFieldName(fieldInfo.Name)] = ReflectionUtils.GetGetMethod(fieldInfo);
             }
-
             return result;
         }
 
-        internal virtual IDictionary<string, KeyValuePair<Type, ReflectionUtils.SetDelegate>>
-            SetterValueFactory(Type type)
+        internal virtual IDictionary<string, KeyValuePair<Type, ReflectionUtils.SetDelegate>> SetterValueFactory(Type type)
         {
-            IDictionary<string, KeyValuePair<Type, ReflectionUtils.SetDelegate>> result =
-                new Dictionary<string, KeyValuePair<Type, ReflectionUtils.SetDelegate>>();
-            foreach (var propertyInfo in ReflectionUtils.GetProperties(type))
+            IDictionary<string, KeyValuePair<Type, ReflectionUtils.SetDelegate>> result = new Dictionary<string, KeyValuePair<Type, ReflectionUtils.SetDelegate>>();
+            foreach (PropertyInfo propertyInfo in ReflectionUtils.GetProperties(type))
+            {
                 if (propertyInfo.CanWrite)
                 {
-                    var setMethod = ReflectionUtils.GetSetterMethodInfo(propertyInfo);
-                    if (setMethod.IsStatic || !setMethod.IsPublic) continue;
-                    result[MapClrMemberNameToJsonFieldName(propertyInfo.Name)] =
-                        new KeyValuePair<Type, ReflectionUtils.SetDelegate>(propertyInfo.PropertyType,
-                            ReflectionUtils.GetSetMethod(propertyInfo));
+                    MethodInfo setMethod = ReflectionUtils.GetSetterMethodInfo(propertyInfo);
+                    if (setMethod.IsStatic || !setMethod.IsPublic)
+                    {
+                        continue;
+                    }
+                    result[MapClrMemberNameToJsonFieldName(propertyInfo.Name)] = new KeyValuePair<Type, ReflectionUtils.SetDelegate>(propertyInfo.PropertyType, ReflectionUtils.GetSetMethod(propertyInfo));
                 }
-
-            foreach (var fieldInfo in ReflectionUtils.GetFields(type))
-            {
-                if (fieldInfo.IsInitOnly || fieldInfo.IsStatic || !fieldInfo.IsPublic) continue;
-                result[MapClrMemberNameToJsonFieldName(fieldInfo.Name)] =
-                    new KeyValuePair<Type, ReflectionUtils.SetDelegate>(fieldInfo.FieldType,
-                        ReflectionUtils.GetSetMethod(fieldInfo));
             }
-
+            foreach (FieldInfo fieldInfo in ReflectionUtils.GetFields(type))
+            {
+                if (fieldInfo.IsInitOnly || fieldInfo.IsStatic || !fieldInfo.IsPublic)
+                {
+                    continue;
+                }
+                result[MapClrMemberNameToJsonFieldName(fieldInfo.Name)] = new KeyValuePair<Type, ReflectionUtils.SetDelegate>(fieldInfo.FieldType, ReflectionUtils.GetSetMethod(fieldInfo));
+            }
             return result;
         }
 
@@ -1152,81 +1255,114 @@ namespace Unity.Cloud.UserReporting.Plugin.SimpleJson
         [SuppressMessage("Microsoft.Maintainability", "CA1502:AvoidExcessiveComplexity")]
         public virtual object DeserializeObject(object value, Type type)
         {
-            if (type == null) throw new ArgumentNullException("type");
-            var str = value as string;
-            if (type == typeof(Guid) && string.IsNullOrEmpty(str)) return default(Guid);
-            if (value == null) return null;
+            if (type == null)
+            {
+                throw new ArgumentNullException("type");
+            }
+            string str = value as string;
+            if (type == typeof(Guid) && string.IsNullOrEmpty(str))
+            {
+                return default(Guid);
+            }
+            if (value == null)
+            {
+                return null;
+            }
             object obj = null;
             if (str != null)
             {
                 if (str.Length != 0) // We know it can't be null now.
                 {
-                    if (type == typeof(DateTime) || (ReflectionUtils.IsNullableType(type) &&
-                                                     Nullable.GetUnderlyingType(type) == typeof(DateTime)))
-                        return DateTime.ParseExact(str, Iso8601Format, CultureInfo.InvariantCulture,
-                            DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal);
-                    if (type == typeof(DateTimeOffset) || (ReflectionUtils.IsNullableType(type) &&
-                                                           Nullable.GetUnderlyingType(type) == typeof(DateTimeOffset)))
-                        return DateTimeOffset.ParseExact(str, Iso8601Format, CultureInfo.InvariantCulture,
-                            DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal);
-                    if (type == typeof(Guid) || (ReflectionUtils.IsNullableType(type) &&
-                                                 Nullable.GetUnderlyingType(type) == typeof(Guid)))
+                    if (type == typeof(DateTime) || ReflectionUtils.IsNullableType(type) && Nullable.GetUnderlyingType(type) == typeof(DateTime))
+                    {
+                        return DateTime.ParseExact(str, PocoJsonSerializerStrategy.Iso8601Format, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal);
+                    }
+                    if (type == typeof(DateTimeOffset) || ReflectionUtils.IsNullableType(type) && Nullable.GetUnderlyingType(type) == typeof(DateTimeOffset))
+                    {
+                        return DateTimeOffset.ParseExact(str, PocoJsonSerializerStrategy.Iso8601Format, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal);
+                    }
+                    if (type == typeof(Guid) || ReflectionUtils.IsNullableType(type) && Nullable.GetUnderlyingType(type) == typeof(Guid))
+                    {
                         return new Guid(str);
+                    }
                     if (type == typeof(Uri))
                     {
-                        var isValid = Uri.IsWellFormedUriString(str, UriKind.RelativeOrAbsolute);
+                        bool isValid = Uri.IsWellFormedUriString(str, UriKind.RelativeOrAbsolute);
                         Uri result;
-                        if (isValid && Uri.TryCreate(str, UriKind.RelativeOrAbsolute, out result)) return result;
+                        if (isValid && Uri.TryCreate(str, UriKind.RelativeOrAbsolute, out result))
+                        {
+                            return result;
+                        }
                         return null;
                     }
-
-                    if (type == typeof(string)) return str;
-                    if (type == typeof(TimeSpan) || (ReflectionUtils.IsNullableType(type) &&
-                                                     Nullable.GetUnderlyingType(type) == typeof(TimeSpan)))
+                    if (type == typeof(string))
+                    {
+                        return str;
+                    }
+                    if (type == typeof(TimeSpan) || ReflectionUtils.IsNullableType(type) && Nullable.GetUnderlyingType(type) == typeof(TimeSpan))
+                    {
                         return TimeSpan.Parse(str);
+                    }
                     return Convert.ChangeType(str, type, CultureInfo.InvariantCulture);
                 }
-
-                if (type == typeof(Guid))
-                    obj = default(Guid);
-                else if (ReflectionUtils.IsNullableType(type) && Nullable.GetUnderlyingType(type) == typeof(Guid))
-                    obj = null;
                 else
-                    obj = str;
+                {
+                    if (type == typeof(Guid))
+                    {
+                        obj = default(Guid);
+                    }
+                    else if (ReflectionUtils.IsNullableType(type) && Nullable.GetUnderlyingType(type) == typeof(Guid))
+                    {
+                        obj = null;
+                    }
+                    else
+                    {
+                        obj = str;
+                    }
+                }
 
                 // Empty string case
                 if (!ReflectionUtils.IsNullableType(type) && Nullable.GetUnderlyingType(type) == typeof(Guid))
+                {
                     return str;
+                }
             }
-
             if (type.IsEnum)
-                return Enum.Parse(type, value.ToString());
-            if (value is bool) return value;
-            var valueIsLong = value is long;
-            var valueIsDouble = value is double;
-            if ((valueIsLong && type == typeof(long)) || (valueIsDouble && type == typeof(double))) return value;
-            if ((valueIsDouble && type != typeof(double)) || (valueIsLong && type != typeof(long)))
             {
-                obj = type == typeof(int) || type == typeof(long) || type == typeof(double) || type == typeof(float) ||
-                      type == typeof(bool) || type == typeof(decimal) || type == typeof(byte) || type == typeof(short)
-                    ? Convert.ChangeType(value, type, CultureInfo.InvariantCulture)
-                    : value;
+                return Enum.Parse(type, value.ToString());
+            }
+            else if (value is bool)
+            {
+                return value;
+            }
+            bool valueIsLong = value is long;
+            bool valueIsDouble = value is double;
+            if (valueIsLong && type == typeof(long) || valueIsDouble && type == typeof(double))
+            {
+                return value;
+            }
+            if (valueIsDouble && type != typeof(double) || valueIsLong && type != typeof(long))
+            {
+                obj = type == typeof(int) || type == typeof(long) || type == typeof(double) || type == typeof(float) || type == typeof(bool) || type == typeof(decimal) || type == typeof(byte) || type == typeof(short) ? Convert.ChangeType(value, type, CultureInfo.InvariantCulture) : value;
             }
             else
             {
-                var objects = value as IDictionary<string, object>;
+                IDictionary<string, object> objects = value as IDictionary<string, object>;
                 if (objects != null)
                 {
-                    var jsonObject = objects;
+                    IDictionary<string, object> jsonObject = objects;
                     if (ReflectionUtils.IsTypeDictionary(type))
                     {
                         // if dictionary then
-                        var types = ReflectionUtils.GetGenericTypeArguments(type);
-                        var keyType = types[0];
-                        var valueType = types[1];
-                        var genericType = typeof(Dictionary<,>).MakeGenericType(keyType, valueType);
-                        var dict = (IDictionary)ConstructorCache[genericType]();
-                        foreach (var kvp in jsonObject) dict.Add(kvp.Key, DeserializeObject(kvp.Value, valueType));
+                        Type[] types = ReflectionUtils.GetGenericTypeArguments(type);
+                        Type keyType = types[0];
+                        Type valueType = types[1];
+                        Type genericType = typeof(Dictionary<,>).MakeGenericType(keyType, valueType);
+                        IDictionary dict = (IDictionary) ConstructorCache[genericType]();
+                        foreach (KeyValuePair<string, object> kvp in jsonObject)
+                        {
+                            dict.Add(kvp.Key, this.DeserializeObject(kvp.Value, valueType));
+                        }
                         obj = dict;
                     }
                     else
@@ -1238,7 +1374,7 @@ namespace Unity.Cloud.UserReporting.Plugin.SimpleJson
                         else
                         {
                             obj = Activator.CreateInstance(type);
-                            foreach (var setter in SetCache[type])
+                            foreach (KeyValuePair<string, KeyValuePair<Type, ReflectionUtils.SetDelegate>> setter in SetCache[type])
                             {
                                 object jsonValue;
                                 if (jsonObject.TryGetValue(setter.Key, out jsonValue))
@@ -1248,7 +1384,7 @@ namespace Unity.Cloud.UserReporting.Plugin.SimpleJson
                                 }
                                 else
                                 {
-                                    var camelKey = setter.Key;
+                                    string camelKey = setter.Key;
                                     camelKey = char.ToLower(camelKey[0]) + camelKey.Substring(1);
                                     if (jsonObject.TryGetValue(camelKey, out jsonValue))
                                     {
@@ -1262,34 +1398,38 @@ namespace Unity.Cloud.UserReporting.Plugin.SimpleJson
                 }
                 else
                 {
-                    var valueAsList = value as IList<object>;
+                    IList<object> valueAsList = value as IList<object>;
                     if (valueAsList != null)
                     {
-                        var jsonObject = valueAsList;
+                        IList<object> jsonObject = valueAsList;
                         IList list = null;
                         if (type.IsArray)
                         {
-                            list = (IList)ConstructorCache[type](jsonObject.Count);
-                            var i = 0;
-                            foreach (var o in jsonObject) list[i++] = DeserializeObject(o, type.GetElementType());
+                            list = (IList) ConstructorCache[type](jsonObject.Count);
+                            int i = 0;
+                            foreach (object o in jsonObject)
+                            {
+                                list[i++] = this.DeserializeObject(o, type.GetElementType());
+                            }
                         }
-                        else if (ReflectionUtils.IsTypeGenericeCollectionInterface(type) ||
-                                 ReflectionUtils.IsAssignableFrom(typeof(IList), type))
+                        else if (ReflectionUtils.IsTypeGenericeCollectionInterface(type) || ReflectionUtils.IsAssignableFrom(typeof(IList), type))
                         {
-                            var innerType = ReflectionUtils.GetGenericListElementType(type);
-                            list = (IList)(ConstructorCache[type] ??
-                                           ConstructorCache[typeof(List<>).MakeGenericType(innerType)])();
-                            foreach (var o in jsonObject) list.Add(DeserializeObject(o, innerType));
+                            Type innerType = ReflectionUtils.GetGenericListElementType(type);
+                            list = (IList) (ConstructorCache[type] ?? ConstructorCache[typeof(List<>).MakeGenericType(innerType)])();
+                            foreach (object o in jsonObject)
+                            {
+                                list.Add(this.DeserializeObject(o, innerType));
+                            }
                         }
-
                         obj = list;
                     }
                 }
-
                 return obj;
             }
-
-            if (ReflectionUtils.IsNullableType(type)) return ReflectionUtils.ToNullableType(obj, type);
+            if (ReflectionUtils.IsNullableType(type))
+            {
+                return ReflectionUtils.ToNullableType(obj, type);
+            }
             return obj;
         }
 
@@ -1298,28 +1438,27 @@ namespace Unity.Cloud.UserReporting.Plugin.SimpleJson
             return Convert.ToDouble(p, CultureInfo.InvariantCulture);
         }
 
-        [SuppressMessage("Microsoft.Design", "CA1007:UseGenericsWhereAppropriate",
-            Justification = "Need to support .NET 2")]
+        [SuppressMessage("Microsoft.Design", "CA1007:UseGenericsWhereAppropriate", Justification = "Need to support .NET 2")]
         protected virtual bool TrySerializeKnownTypes(object input, out object output)
         {
-            var returnValue = true;
+            bool returnValue = true;
             if (input is DateTime)
             {
-                output = ((DateTime)input).ToUniversalTime()
-                    .ToString(Iso8601Format[0], CultureInfo.InvariantCulture);
+                output = ((DateTime) input).ToUniversalTime()
+                    .ToString(PocoJsonSerializerStrategy.Iso8601Format[0], CultureInfo.InvariantCulture);
             }
             else if (input is DateTimeOffset)
             {
-                output = ((DateTimeOffset)input).ToUniversalTime()
-                    .ToString(Iso8601Format[0], CultureInfo.InvariantCulture);
+                output = ((DateTimeOffset) input).ToUniversalTime()
+                    .ToString(PocoJsonSerializerStrategy.Iso8601Format[0], CultureInfo.InvariantCulture);
             }
             else if (input is TimeSpan)
             {
-                output = ((TimeSpan)input).ToString();
+                output = ((TimeSpan) input).ToString();
             }
             else if (input is Guid)
             {
-                output = ((Guid)input).ToString("D");
+                output = ((Guid) input).ToString("D");
             }
             else if (input is Uri)
             {
@@ -1327,10 +1466,10 @@ namespace Unity.Cloud.UserReporting.Plugin.SimpleJson
             }
             else
             {
-                var inputEnum = input as Enum;
+                Enum inputEnum = input as Enum;
                 if (inputEnum != null)
                 {
-                    output = SerializeEnum(inputEnum);
+                    output = this.SerializeEnum(inputEnum);
                 }
                 else
                 {
@@ -1338,23 +1477,31 @@ namespace Unity.Cloud.UserReporting.Plugin.SimpleJson
                     output = null;
                 }
             }
-
             return returnValue;
         }
 
-        [SuppressMessage("Microsoft.Design", "CA1007:UseGenericsWhereAppropriate",
-            Justification = "Need to support .NET 2")]
+        [SuppressMessage("Microsoft.Design", "CA1007:UseGenericsWhereAppropriate", Justification = "Need to support .NET 2")]
         protected virtual bool TrySerializeUnknownTypes(object input, out object output)
         {
-            if (input == null) throw new ArgumentNullException("input");
+            if (input == null)
+            {
+                throw new ArgumentNullException("input");
+            }
             output = null;
-            var type = input.GetType();
-            if (type.FullName == null) return false;
+            Type type = input.GetType();
+            if (type.FullName == null)
+            {
+                return false;
+            }
             IDictionary<string, object> obj = new JsonObject();
-            var getters = GetCache[type];
-            foreach (var getter in getters)
+            IDictionary<string, ReflectionUtils.GetDelegate> getters = GetCache[type];
+            foreach (KeyValuePair<string, ReflectionUtils.GetDelegate> getter in getters)
+            {
                 if (getter.Value != null)
-                    obj.Add(MapClrMemberNameToJsonFieldName(getter.Key), getter.Value(input));
+                {
+                    obj.Add(this.MapClrMemberNameToJsonFieldName(getter.Key), getter.Value(input));
+                }
+            }
             output = obj;
             return true;
         }
@@ -1371,10 +1518,8 @@ namespace Unity.Cloud.UserReporting.Plugin.SimpleJson
     {
         public DataContractJsonSerializerStrategy()
         {
-            GetCache =
- new ReflectionUtils.ThreadSafeDictionary<Type, IDictionary<string, ReflectionUtils.GetDelegate>>(GetterValueFactory);
-            SetCache =
- new ReflectionUtils.ThreadSafeDictionary<Type, IDictionary<string, KeyValuePair<Type, ReflectionUtils.SetDelegate>>>(SetterValueFactory);
+            GetCache = new ReflectionUtils.ThreadSafeDictionary<Type, IDictionary<string, ReflectionUtils.GetDelegate>>(GetterValueFactory);
+            SetCache = new ReflectionUtils.ThreadSafeDictionary<Type, IDictionary<string, KeyValuePair<Type, ReflectionUtils.SetDelegate>>>(SetterValueFactory);
         }
 
         internal override IDictionary<string, ReflectionUtils.GetDelegate> GetterValueFactory(Type type)
@@ -1383,8 +1528,7 @@ namespace Unity.Cloud.UserReporting.Plugin.SimpleJson
             if (!hasDataContract)
                 return base.GetterValueFactory(type);
             string jsonKey;
-            IDictionary<string, ReflectionUtils.GetDelegate> result =
- new Dictionary<string, ReflectionUtils.GetDelegate>();
+            IDictionary<string, ReflectionUtils.GetDelegate> result = new Dictionary<string, ReflectionUtils.GetDelegate>();
             foreach (PropertyInfo propertyInfo in ReflectionUtils.GetProperties(type))
             {
                 if (propertyInfo.CanRead)
@@ -1408,23 +1552,20 @@ namespace Unity.Cloud.UserReporting.Plugin.SimpleJson
             if (!hasDataContract)
                 return base.SetterValueFactory(type);
             string jsonKey;
-            IDictionary<string, KeyValuePair<Type, ReflectionUtils.SetDelegate>> result =
- new Dictionary<string, KeyValuePair<Type, ReflectionUtils.SetDelegate>>();
+            IDictionary<string, KeyValuePair<Type, ReflectionUtils.SetDelegate>> result = new Dictionary<string, KeyValuePair<Type, ReflectionUtils.SetDelegate>>();
             foreach (PropertyInfo propertyInfo in ReflectionUtils.GetProperties(type))
             {
                 if (propertyInfo.CanWrite)
                 {
                     MethodInfo setMethod = ReflectionUtils.GetSetterMethodInfo(propertyInfo);
                     if (!setMethod.IsStatic && CanAdd(propertyInfo, out jsonKey))
-                        result[jsonKey] =
- new KeyValuePair<Type, ReflectionUtils.SetDelegate>(propertyInfo.PropertyType, ReflectionUtils.GetSetMethod(propertyInfo));
+                        result[jsonKey] = new KeyValuePair<Type, ReflectionUtils.SetDelegate>(propertyInfo.PropertyType, ReflectionUtils.GetSetMethod(propertyInfo));
                 }
             }
             foreach (FieldInfo fieldInfo in ReflectionUtils.GetFields(type))
             {
                 if (!fieldInfo.IsInitOnly && !fieldInfo.IsStatic && CanAdd(fieldInfo, out jsonKey))
-                    result[jsonKey] =
- new KeyValuePair<Type, ReflectionUtils.SetDelegate>(fieldInfo.FieldType, ReflectionUtils.GetSetMethod(fieldInfo));
+                    result[jsonKey] = new KeyValuePair<Type, ReflectionUtils.SetDelegate>(fieldInfo.FieldType, ReflectionUtils.GetSetMethod(fieldInfo));
             }
             // todo implement sorting for DATACONTRACT.
             return result;
@@ -1435,8 +1576,7 @@ namespace Unity.Cloud.UserReporting.Plugin.SimpleJson
             jsonKey = null;
             if (ReflectionUtils.GetAttribute(info, typeof(IgnoreDataMemberAttribute)) != null)
                 return false;
-            DataMemberAttribute dataMemberAttribute =
- (DataMemberAttribute)ReflectionUtils.GetAttribute(info, typeof(DataMemberAttribute));
+            DataMemberAttribute dataMemberAttribute = (DataMemberAttribute)ReflectionUtils.GetAttribute(info, typeof(DataMemberAttribute));
             if (dataMemberAttribute == null)
                 return false;
             jsonKey = string.IsNullOrEmpty(dataMemberAttribute.Name) ? info.Name : dataMemberAttribute.Name;
@@ -1458,7 +1598,7 @@ namespace Unity.Cloud.UserReporting.Plugin.SimpleJson
 #endif
             class ReflectionUtils
         {
-            private static readonly object[] EmptyObjects = { };
+            private static readonly object[] EmptyObjects = new object[] { };
 
             public delegate object GetDelegate(object source);
 
@@ -1487,7 +1627,10 @@ namespace Unity.Cloud.UserReporting.Plugin.SimpleJson
                     return null;
                 return info.GetCustomAttribute(type);
 #else
-                if (info == null || type == null || !Attribute.IsDefined(info, type)) return null;
+                if (info == null || type == null || !Attribute.IsDefined(info, type))
+                {
+                    return null;
+                }
                 return Attribute.GetCustomAttribute(info, type);
 #endif
             }
@@ -1500,11 +1643,14 @@ namespace Unity.Cloud.UserReporting.Plugin.SimpleJson
 #else
                 interfaces = type.GetInterfaces();
 #endif
-                foreach (var implementedInterface in interfaces)
-                    if (IsTypeGeneric(implementedInterface) &&
-                        implementedInterface.GetGenericTypeDefinition() == typeof(IList<>))
-                        return GetGenericTypeArguments(implementedInterface)[0];
-                return GetGenericTypeArguments(type)[0];
+                foreach (Type implementedInterface in interfaces)
+                {
+                    if (ReflectionUtils.IsTypeGeneric(implementedInterface) && implementedInterface.GetGenericTypeDefinition() == typeof(IList<>))
+                    {
+                        return ReflectionUtils.GetGenericTypeArguments(implementedInterface)[0];
+                    }
+                }
+                return ReflectionUtils.GetGenericTypeArguments(type)[0];
             }
 
             public static Attribute GetAttribute(Type objectType, Type attributeType)
@@ -1515,7 +1661,9 @@ namespace Unity.Cloud.UserReporting.Plugin.SimpleJson
                 return objectType.GetTypeInfo().GetCustomAttribute(attributeType);
 #else
                 if (objectType == null || attributeType == null || !Attribute.IsDefined(objectType, attributeType))
+                {
                     return null;
+                }
                 return Attribute.GetCustomAttribute(objectType, attributeType);
 #endif
             }
@@ -1531,22 +1679,24 @@ namespace Unity.Cloud.UserReporting.Plugin.SimpleJson
 
             public static bool IsTypeGeneric(Type type)
             {
-                return GetTypeInfo(type)
+                return ReflectionUtils.GetTypeInfo(type)
                     .IsGenericType;
             }
 
             public static bool IsTypeGenericeCollectionInterface(Type type)
             {
-                if (!IsTypeGeneric(type)) return false;
-                var genericDefinition = type.GetGenericTypeDefinition();
-                return genericDefinition == typeof(IList<>) || genericDefinition == typeof(ICollection<>) ||
-                       genericDefinition == typeof(IEnumerable<>);
+                if (!ReflectionUtils.IsTypeGeneric(type))
+                {
+                    return false;
+                }
+                Type genericDefinition = type.GetGenericTypeDefinition();
+                return genericDefinition == typeof(IList<>) || genericDefinition == typeof(ICollection<>) || genericDefinition == typeof(IEnumerable<>);
             }
 
             public static bool IsAssignableFrom(Type type1, Type type2)
             {
-                return GetTypeInfo(type1)
-                    .IsAssignableFrom(GetTypeInfo(type2));
+                return ReflectionUtils.GetTypeInfo(type1)
+                    .IsAssignableFrom(ReflectionUtils.GetTypeInfo(type2));
             }
 
             public static bool IsTypeDictionary(Type type)
@@ -1555,31 +1705,34 @@ namespace Unity.Cloud.UserReporting.Plugin.SimpleJson
                 if (typeof(IDictionary<,>).GetTypeInfo().IsAssignableFrom(type.GetTypeInfo()))
                     return true;
 #else
-                if (typeof(IDictionary).IsAssignableFrom(type)) return true;
+                if (typeof(System.Collections.IDictionary).IsAssignableFrom(type))
+                {
+                    return true;
+                }
 #endif
-                if (!GetTypeInfo(type)
-                        .IsGenericType)
+                if (!ReflectionUtils.GetTypeInfo(type)
+                    .IsGenericType)
+                {
                     return false;
-                var genericDefinition = type.GetGenericTypeDefinition();
+                }
+                Type genericDefinition = type.GetGenericTypeDefinition();
                 return genericDefinition == typeof(IDictionary<,>);
             }
 
             public static bool IsNullableType(Type type)
             {
-                return GetTypeInfo(type)
-                    .IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>);
+                return ReflectionUtils.GetTypeInfo(type)
+                           .IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>);
             }
 
             public static object ToNullableType(object obj, Type nullableType)
             {
-                return obj == null
-                    ? null
-                    : Convert.ChangeType(obj, Nullable.GetUnderlyingType(nullableType), CultureInfo.InvariantCulture);
+                return obj == null ? null : Convert.ChangeType(obj, Nullable.GetUnderlyingType(nullableType), CultureInfo.InvariantCulture);
             }
 
             public static bool IsValueType(Type type)
             {
-                return GetTypeInfo(type)
+                return ReflectionUtils.GetTypeInfo(type)
                     .IsValueType;
             }
 
@@ -1594,25 +1747,31 @@ namespace Unity.Cloud.UserReporting.Plugin.SimpleJson
 
             public static ConstructorInfo GetConstructorInfo(Type type, params Type[] argsType)
             {
-                var constructorInfos = GetConstructors(type);
+                IEnumerable<ConstructorInfo> constructorInfos = ReflectionUtils.GetConstructors(type);
                 int i;
                 bool matches;
-                foreach (var constructorInfo in constructorInfos)
+                foreach (ConstructorInfo constructorInfo in constructorInfos)
                 {
-                    var parameters = constructorInfo.GetParameters();
-                    if (argsType.Length != parameters.Length) continue;
+                    ParameterInfo[] parameters = constructorInfo.GetParameters();
+                    if (argsType.Length != parameters.Length)
+                    {
+                        continue;
+                    }
                     i = 0;
                     matches = true;
-                    foreach (var parameterInfo in constructorInfo.GetParameters())
+                    foreach (ParameterInfo parameterInfo in constructorInfo.GetParameters())
+                    {
                         if (parameterInfo.ParameterType != argsType[i])
                         {
                             matches = false;
                             break;
                         }
-
-                    if (matches) return constructorInfo;
+                    }
+                    if (matches)
+                    {
+                        return constructorInfo;
+                    }
                 }
-
                 return null;
             }
 
@@ -1621,8 +1780,7 @@ namespace Unity.Cloud.UserReporting.Plugin.SimpleJson
 #if SIMPLE_JSON_TYPEINFO
                 return type.GetRuntimeProperties();
 #else
-                return type.GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic |
-                                          BindingFlags.Static);
+                return type.GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static);
 #endif
             }
 
@@ -1631,8 +1789,7 @@ namespace Unity.Cloud.UserReporting.Plugin.SimpleJson
 #if SIMPLE_JSON_TYPEINFO
                 return type.GetRuntimeFields();
 #else
-                return type.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic |
-                                      BindingFlags.Static);
+                return type.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static);
 #endif
             }
 
@@ -1657,7 +1814,7 @@ namespace Unity.Cloud.UserReporting.Plugin.SimpleJson
             public static ConstructorDelegate GetContructor(ConstructorInfo constructorInfo)
             {
 #if SIMPLE_JSON_NO_LINQ_EXPRESSION
-                return GetConstructorByReflection(constructorInfo);
+                return ReflectionUtils.GetConstructorByReflection(constructorInfo);
 #else
                 return ReflectionUtils.GetConstructorByExpression(constructorInfo);
 #endif
@@ -1666,7 +1823,7 @@ namespace Unity.Cloud.UserReporting.Plugin.SimpleJson
             public static ConstructorDelegate GetContructor(Type type, params Type[] argsType)
             {
 #if SIMPLE_JSON_NO_LINQ_EXPRESSION
-                return GetConstructorByReflection(type, argsType);
+                return ReflectionUtils.GetConstructorByReflection(type, argsType);
 #else
                 return ReflectionUtils.GetConstructorByExpression(type, argsType);
 #endif
@@ -1679,8 +1836,8 @@ namespace Unity.Cloud.UserReporting.Plugin.SimpleJson
 
             public static ConstructorDelegate GetConstructorByReflection(Type type, params Type[] argsType)
             {
-                var constructorInfo = GetConstructorInfo(type, argsType);
-                return constructorInfo == null ? null : GetConstructorByReflection(constructorInfo);
+                ConstructorInfo constructorInfo = ReflectionUtils.GetConstructorInfo(type, argsType);
+                return constructorInfo == null ? null : ReflectionUtils.GetConstructorByReflection(constructorInfo);
             }
 
 #if !SIMPLE_JSON_NO_LINQ_EXPRESSION
@@ -1715,7 +1872,7 @@ namespace Unity.Cloud.UserReporting.Plugin.SimpleJson
             public static GetDelegate GetGetMethod(PropertyInfo propertyInfo)
             {
 #if SIMPLE_JSON_NO_LINQ_EXPRESSION
-                return GetGetMethodByReflection(propertyInfo);
+                return ReflectionUtils.GetGetMethodByReflection(propertyInfo);
 #else
                 return ReflectionUtils.GetGetMethodByExpression(propertyInfo);
 #endif
@@ -1724,7 +1881,7 @@ namespace Unity.Cloud.UserReporting.Plugin.SimpleJson
             public static GetDelegate GetGetMethod(FieldInfo fieldInfo)
             {
 #if SIMPLE_JSON_NO_LINQ_EXPRESSION
-                return GetGetMethodByReflection(fieldInfo);
+                return ReflectionUtils.GetGetMethodByReflection(fieldInfo);
 #else
                 return ReflectionUtils.GetGetMethodByExpression(fieldInfo);
 #endif
@@ -1732,8 +1889,8 @@ namespace Unity.Cloud.UserReporting.Plugin.SimpleJson
 
             public static GetDelegate GetGetMethodByReflection(PropertyInfo propertyInfo)
             {
-                var methodInfo = GetGetterMethodInfo(propertyInfo);
-                return delegate(object source) { return methodInfo.Invoke(source, EmptyObjects); };
+                MethodInfo methodInfo = ReflectionUtils.GetGetterMethodInfo(propertyInfo);
+                return delegate(object source) { return methodInfo.Invoke(source, ReflectionUtils.EmptyObjects); };
             }
 
             public static GetDelegate GetGetMethodByReflection(FieldInfo fieldInfo)
@@ -1746,10 +1903,8 @@ namespace Unity.Cloud.UserReporting.Plugin.SimpleJson
             {
                 MethodInfo getMethodInfo = ReflectionUtils.GetGetterMethodInfo(propertyInfo);
                 ParameterExpression instance = Expression.Parameter(typeof(object), "instance");
-                UnaryExpression instanceCast =
- !ReflectionUtils.IsValueType(propertyInfo.DeclaringType) ? Expression.TypeAs(instance, propertyInfo.DeclaringType) : Expression.Convert(instance, propertyInfo.DeclaringType);
-                Func<object, object> compiled =
- Expression.Lambda<Func<object, object>>(Expression.TypeAs(Expression.Call(instanceCast, getMethodInfo), typeof(object)), instance)
+                UnaryExpression instanceCast = !ReflectionUtils.IsValueType(propertyInfo.DeclaringType) ? Expression.TypeAs(instance, propertyInfo.DeclaringType) : Expression.Convert(instance, propertyInfo.DeclaringType);
+                Func<object, object> compiled = Expression.Lambda<Func<object, object>>(Expression.TypeAs(Expression.Call(instanceCast, getMethodInfo), typeof(object)), instance)
                     .Compile();
                 return delegate(object source) { return compiled(source); };
             }
@@ -1757,10 +1912,8 @@ namespace Unity.Cloud.UserReporting.Plugin.SimpleJson
             public static GetDelegate GetGetMethodByExpression(FieldInfo fieldInfo)
             {
                 ParameterExpression instance = Expression.Parameter(typeof(object), "instance");
-                MemberExpression member =
- Expression.Field(Expression.Convert(instance, fieldInfo.DeclaringType), fieldInfo);
-                GetDelegate compiled =
- Expression.Lambda<GetDelegate>(Expression.Convert(member, typeof(object)), instance)
+                MemberExpression member = Expression.Field(Expression.Convert(instance, fieldInfo.DeclaringType), fieldInfo);
+                GetDelegate compiled = Expression.Lambda<GetDelegate>(Expression.Convert(member, typeof(object)), instance)
                     .Compile();
                 return delegate(object source) { return compiled(source); };
             }
@@ -1770,7 +1923,7 @@ namespace Unity.Cloud.UserReporting.Plugin.SimpleJson
             public static SetDelegate GetSetMethod(PropertyInfo propertyInfo)
             {
 #if SIMPLE_JSON_NO_LINQ_EXPRESSION
-                return GetSetMethodByReflection(propertyInfo);
+                return ReflectionUtils.GetSetMethodByReflection(propertyInfo);
 #else
                 return ReflectionUtils.GetSetMethodByExpression(propertyInfo);
 #endif
@@ -1779,7 +1932,7 @@ namespace Unity.Cloud.UserReporting.Plugin.SimpleJson
             public static SetDelegate GetSetMethod(FieldInfo fieldInfo)
             {
 #if SIMPLE_JSON_NO_LINQ_EXPRESSION
-                return GetSetMethodByReflection(fieldInfo);
+                return ReflectionUtils.GetSetMethodByReflection(fieldInfo);
 #else
                 return ReflectionUtils.GetSetMethodByExpression(fieldInfo);
 #endif
@@ -1787,8 +1940,8 @@ namespace Unity.Cloud.UserReporting.Plugin.SimpleJson
 
             public static SetDelegate GetSetMethodByReflection(PropertyInfo propertyInfo)
             {
-                var methodInfo = GetSetterMethodInfo(propertyInfo);
-                return delegate(object source, object value) { methodInfo.Invoke(source, new object[] { value }); };
+                MethodInfo methodInfo = ReflectionUtils.GetSetterMethodInfo(propertyInfo);
+                return delegate(object source, object value) { methodInfo.Invoke(source, new object[] {value}); };
             }
 
             public static SetDelegate GetSetMethodByReflection(FieldInfo fieldInfo)
@@ -1802,12 +1955,9 @@ namespace Unity.Cloud.UserReporting.Plugin.SimpleJson
                 MethodInfo setMethodInfo = ReflectionUtils.GetSetterMethodInfo(propertyInfo);
                 ParameterExpression instance = Expression.Parameter(typeof(object), "instance");
                 ParameterExpression value = Expression.Parameter(typeof(object), "value");
-                UnaryExpression instanceCast =
- !ReflectionUtils.IsValueType(propertyInfo.DeclaringType) ? Expression.TypeAs(instance, propertyInfo.DeclaringType) : Expression.Convert(instance, propertyInfo.DeclaringType);
-                UnaryExpression valueCast =
- !ReflectionUtils.IsValueType(propertyInfo.PropertyType) ? Expression.TypeAs(value, propertyInfo.PropertyType) : Expression.Convert(value, propertyInfo.PropertyType);
-                Action<object, object> compiled =
- Expression.Lambda<Action<object, object>>(Expression.Call(instanceCast, setMethodInfo, valueCast), new ParameterExpression[] {instance, value})
+                UnaryExpression instanceCast = !ReflectionUtils.IsValueType(propertyInfo.DeclaringType) ? Expression.TypeAs(instance, propertyInfo.DeclaringType) : Expression.Convert(instance, propertyInfo.DeclaringType);
+                UnaryExpression valueCast = !ReflectionUtils.IsValueType(propertyInfo.PropertyType) ? Expression.TypeAs(value, propertyInfo.PropertyType) : Expression.Convert(value, propertyInfo.PropertyType);
+                Action<object, object> compiled = Expression.Lambda<Action<object, object>>(Expression.Call(instanceCast, setMethodInfo, valueCast), new ParameterExpression[] {instance, value})
                     .Compile();
                 return delegate(object source, object val) { compiled(source, val); };
             }
@@ -1816,8 +1966,7 @@ namespace Unity.Cloud.UserReporting.Plugin.SimpleJson
             {
                 ParameterExpression instance = Expression.Parameter(typeof(object), "instance");
                 ParameterExpression value = Expression.Parameter(typeof(object), "value");
-                Action<object, object> compiled =
- Expression.Lambda<Action<object, object>>(ReflectionUtils.Assign(Expression.Field(Expression.Convert(instance, fieldInfo.DeclaringType), fieldInfo), Expression.Convert(value, fieldInfo.FieldType)), instance, value)
+                Action<object, object> compiled = Expression.Lambda<Action<object, object>>(ReflectionUtils.Assign(Expression.Field(Expression.Convert(instance, fieldInfo.DeclaringType), fieldInfo), Expression.Convert(value, fieldInfo.FieldType)), instance, value)
                     .Compile();
                 return delegate(object source, object val) { compiled(source, val); };
             }
@@ -1863,7 +2012,7 @@ namespace Unity.Cloud.UserReporting.Plugin.SimpleJson
 
                 private Dictionary<TKey, TValue> _dictionary;
 
-                private readonly object _lock = new();
+                private readonly object _lock = new object();
 
                 private readonly ThreadSafeDictionaryValueFactory<TKey, TValue> _valueFactory;
 
@@ -1871,19 +2020,31 @@ namespace Unity.Cloud.UserReporting.Plugin.SimpleJson
 
                 #region Properties
 
-                public int Count => _dictionary.Count;
+                public int Count
+                {
+                    get { return _dictionary.Count; }
+                }
 
-                public bool IsReadOnly => throw new NotImplementedException();
+                public bool IsReadOnly
+                {
+                    get { throw new NotImplementedException(); }
+                }
 
                 public TValue this[TKey key]
                 {
-                    get => Get(key);
-                    set => throw new NotImplementedException();
+                    get { return Get(key); }
+                    set { throw new NotImplementedException(); }
                 }
 
-                public ICollection<TKey> Keys => _dictionary.Keys;
+                public ICollection<TKey> Keys
+                {
+                    get { return _dictionary.Keys; }
+                }
 
-                public ICollection<TValue> Values => _dictionary.Values;
+                public ICollection<TValue> Values
+                {
+                    get { return _dictionary.Values; }
+                }
 
                 #endregion
 
@@ -1901,7 +2062,7 @@ namespace Unity.Cloud.UserReporting.Plugin.SimpleJson
 
                 private TValue AddValue(TKey key)
                 {
-                    var value = _valueFactory(key);
+                    TValue value = _valueFactory(key);
                     lock (_lock)
                     {
                         if (_dictionary == null)
@@ -1912,13 +2073,15 @@ namespace Unity.Cloud.UserReporting.Plugin.SimpleJson
                         else
                         {
                             TValue val;
-                            if (_dictionary.TryGetValue(key, out val)) return val;
-                            var dict = new Dictionary<TKey, TValue>(_dictionary);
+                            if (_dictionary.TryGetValue(key, out val))
+                            {
+                                return val;
+                            }
+                            Dictionary<TKey, TValue> dict = new Dictionary<TKey, TValue>(_dictionary);
                             dict[key] = value;
                             _dictionary = dict;
                         }
                     }
-
                     return value;
                 }
 
@@ -1944,9 +2107,15 @@ namespace Unity.Cloud.UserReporting.Plugin.SimpleJson
 
                 private TValue Get(TKey key)
                 {
-                    if (_dictionary == null) return AddValue(key);
+                    if (_dictionary == null)
+                    {
+                        return this.AddValue(key);
+                    }
                     TValue value;
-                    if (!_dictionary.TryGetValue(key, out value)) return AddValue(key);
+                    if (!_dictionary.TryGetValue(key, out value))
+                    {
+                        return this.AddValue(key);
+                    }
                     return value;
                 }
 
@@ -1955,7 +2124,7 @@ namespace Unity.Cloud.UserReporting.Plugin.SimpleJson
                     return _dictionary.GetEnumerator();
                 }
 
-                IEnumerator IEnumerable.GetEnumerator()
+                System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
                 {
                     return _dictionary.GetEnumerator();
                 }
